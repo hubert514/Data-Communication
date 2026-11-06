@@ -29,3 +29,8 @@ README Sections 2–7 are authoritative; PM decides requirement changes.
 
 Evidence/decision log: TODO — source paths + line references in pinned commit,
 probe command/output, selected strategy, PM review URL and date.
+
+The pending decision register and written Nov 10 feasibility gate are tracked in
+[PM_DECISIONS.zh-TW.md](PM_DECISIONS.zh-TW.md). D02–D08 identify evidence owners,
+dependencies and the items needed to freeze this contract. The register is not
+an approval of any currently unresolved technical choice.

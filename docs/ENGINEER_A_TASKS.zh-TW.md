@@ -1,8 +1,8 @@
 # Engineer A 工作交接書：模擬環境、RR 基準、流量與量測
 
-文件修訂：r1。更新日期：2026-11-07。時程使用 Asia/Taipei。
+文件修訂：r2。更新日期：2026-11-07。時程使用 Asia/Taipei。
 
-**負責人：Engineer A。實際姓名／GitHub 帳號：TODO，由 Technical PM 指定。**
+**負責人：Engineer A。實際姓名／GitHub 帳號與正式指派：由使用者自行處理，尚未代填。**
 
 本文將專案規格拆成可執行的工作包。需求與驗收依據仍是根目錄 [README](../README.md)；本文的實作建議不代表新的核准需求。若兩者衝突，以 README 及 PM 記錄的決策為準。
 
@@ -10,7 +10,7 @@
 
 ## 0. 開工與版本規範
 
-先讀 [共用版本／協作規範](DEVELOPMENT_WORKFLOW.zh-TW.md)。這份 r1 是工作指示版本，不表示場景已實作、ns-3 已驗收或 project 已發布。
+先讀 [共用版本／協作規範](DEVELOPMENT_WORKFLOW.zh-TW.md)。這份 r2 是工作指示版本，不表示場景已實作、ns-3 已驗收或 project 已發布。
 
 - 從最新 `origin/main` 建立 `feature/simulation-*`，在 PR 記錄完整 base commit；不要繼續把日常開發堆在 bootstrap 分支。
 - `configs/ns3-candidate.json` 是候選 lock，ENVIRONMENT.md 記錄接受狀態；更換 tag/SHA 時必須同步並取得 PM 核准，不能只改本機 `.local`。
@@ -20,6 +20,8 @@
 - 透過 PR 合併，禁止 force-push `main`；本次文件上線不代表 #1/#5/#9 或 checkpoint 通過。
 
 本文工作包使用 `A-ENV`、`A-BASE`、`A-INTEG` 等名稱；研究方案仍是 `B1`／`P1`／`P2`，兩者不是同一套編號。
+
+啟動時依 [PM 決策清單／11/10 書面驗收](PM_DECISIONS.zh-TW.md) 交第一輪證據。基本 main 保護已啟用，但不代表 simulator gate 通過；使用者不安排評審會議或日曆活動。r2 僅更新啟動流程與帳號處理方式，工作與科學驗收未變。
 
 ### 工作包輸入／交付／驗收對照
 
