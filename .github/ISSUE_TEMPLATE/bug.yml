@@ -1,0 +1,28 @@
+name: Reproducible defect
+description: Build, simulation, scheduler, measurement or analysis failure
+title: "[Bug] "
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: Owner role / milestone / target date
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Exact reproduction command, config, seed/run and pinned SHAs
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed versus expected behavior, logs and environment
+    validations:
+      required: true
+  - type: textarea
+    id: gate
+    attributes:
+      label: Acceptance criteria, dependencies and evidence path
+    validations:
+      required: true
