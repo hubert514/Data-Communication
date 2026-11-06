@@ -52,5 +52,9 @@ The [issue register](ISSUES.md) contains all 12 checkpoint tasks and four
 milestones. Handles, project license, accepted toolchain, timing/load details,
 branch protection and scientific decisions remain with the Technical PM.
 
-Every subsequent change goes through a PR. This bootstrap PR also awaits PM
-review before merge; bootstrap completion does not mean checkpoint acceptance.
+Bootstrap [PR #13](https://github.com/hubert514/Data-Communication/pull/13) was
+merged to `main` on 2026-11-07 (Asia/Taipei), following the user's explicit
+instruction to review and publish to main. Merge commit:
+`a861e6b15bc120775438f5f6f11bda7b8427fb8e`.
+This accepts the repository preparation only; simulator build, DL MU proof and
+checkpoint acceptance remain pending. Every subsequent change goes through a PR.
