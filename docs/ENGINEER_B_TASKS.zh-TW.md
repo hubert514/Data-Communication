@@ -1,8 +1,8 @@
 # Engineer B 工作交接書：排程器可行性、P1/P2、決策追蹤與測試
 
-文件修訂：r1。更新日期：2026-11-07。時程使用 Asia/Taipei。
+文件修訂：r2。更新日期：2026-11-07。時程使用 Asia/Taipei。
 
-**負責人：Engineer B。實際姓名／GitHub 帳號：TODO，由 Technical PM 指定。**
+**負責人：Engineer B。實際姓名／GitHub 帳號與正式指派：由使用者自行處理，尚未代填。**
 
 需求與驗收依據為根目錄 [README](../README.md)。本文將任務拆成可交接工作包；其中的測試設計與工程建議不是新的科學規格。版本、演算法語意、優先序、介面、整合與驗收由 PM 最終決定。
 
@@ -10,7 +10,7 @@
 
 ## 0. 開工與版本規範
 
-先讀 [共用版本／協作規範](DEVELOPMENT_WORKFLOW.zh-TW.md)。本文 r1 是工作指示修訂；它不表示 P1/P2 已實作，或任何科學 gate 已接受。
+先讀 [共用版本／協作規範](DEVELOPMENT_WORKFLOW.zh-TW.md)。本文 r2 是工作指示修訂；它不表示 P1/P2 已實作，或任何科學 gate 已接受。
 
 - 從最新 `origin/main` 建立 `feature/scheduler-*`，PR 記錄完整 base commit、上游 SHA 與依賴 A 的哪個 commit／PR。
 - source references 必須對應 `configs/ns3-candidate.json` 的 exact SHA；ENVIRONMENT.md 另外記接受狀態。不可因換一個較容易修改的 release 就直接沿用原比較。
@@ -20,6 +20,8 @@
 - 每次 PR 提供實際證據，保留 RR 回歸；只經 PR 合併，不 force-push `main`。文件合併不會自動接受 #2/#6/#9。
 
 本文工作包編號為 `B-FEAS`、`B-PROBE`、`B-INTEG`；研究方案 `B1` 專指官方 RR baseline，避免與「B 工程師第一階段」混淆。
+
+第一輪交付依 [PM 決策清單／11/10 書面驗收](PM_DECISIONS.zh-TW.md)。基本 main 保護已啟用，使用者自行處理帳號與正式指派，且不安排評審會議或日曆活動。r2 僅更新啟動流程；source／runtime／P1/P2 的驗收要求未變。
 
 ### 工作包輸入／交付／驗收對照
 

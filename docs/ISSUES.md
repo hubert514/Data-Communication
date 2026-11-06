@@ -1,8 +1,8 @@
 # Checkpoint issue register
 
 All tasks are open, with role ownership, dependencies, acceptance criteria,
-target milestone and pending evidence. Technical PM must confirm GitHub handles
-before assignment; no team member identities were inferred.
+target milestone and pending evidence. The user is handling GitHub handles,
+access and formal A/B assignment; no team member identities were inferred.
 
 | Issue | Task | State |
 |---|---|---|
@@ -23,7 +23,11 @@ Milestones: [M0 feasibility](https://github.com/hubert514/Data-Communication/mil
 [M1a baseline](https://github.com/hubert514/Data-Communication/milestone/2),
 [M1b integration](https://github.com/hubert514/Data-Communication/milestone/3),
 [checkpoint window](https://github.com/hubert514/Data-Communication/milestone/4).
-Due dates use end of day Asia/Taipei. Nov 22 is the end of the presentation
-window, not a confirmed presentation appointment.
+Milestones track the named dates/windows in Asia/Taipei. The GitHub API currently
+returns date timestamps at 00:00 UTC; do not interpret that as an agreed local
+meeting time or end-of-day cutoff. No exact review time has been scheduled.
+Nov 22 is the end of the presentation window, not a confirmed appointment.
+
+Kickoff evidence and unresolved PM decisions: [PM_DECISIONS.zh-TW.md](PM_DECISIONS.zh-TW.md).
 
 Later M2–M6 remain a PM-prioritized roadmap in README/PM_STATUS; dates are TODO.

@@ -1,6 +1,6 @@
 # 版本管理、協作與交付規範
 
-文件修訂：r1。更新日期：2026-11-07。維護與技術決策：Technical PM。
+文件修訂：r2。更新日期：2026-11-07。維護與技術決策：Technical PM。
 
 適用對象：Engineer A、Engineer B、Technical PM、Report Lead。
 本文件具體化 [README 第 7–10 節](../README.md) 的工作流程，未變更研究問題、實驗設定或 checkpoint 驗收標準。
@@ -65,7 +65,7 @@ git commit -m "docs: clarify baseline handoff (refs #5)"
 - 不 force-push `main`，也不改寫別人正在使用的共用分支歷史。
 - `main` 更新後，先 `git fetch origin`，在自己的分支整合 `origin/main` 並重跑受影響檢查；共用分支優先採不改寫歷史的 merge。衝突由相關 owner 協作處理。
 - 不為了讓 CI 綠燈而刪除測試、假造資料或關掉應執行的檢查。
-- 這是工作規範；GitHub branch protection／強制 reviewer 設定目前仍為 TODO，不能把文件當成已啟用技術防護。
+- GitHub 基本 branch protection 已啟用：PR、最新分支的 `tooling` CI、包含 admin、對話需解決、禁強推／刪除；目前 required approvals=0。至少 1 位其他審查者的 team 規則仍是提案，等使用者完成成員設定後再啟用；不能把基本保護稱為已強制 PM 審查。
 
 ## 3. 共用檔案的協作 owner
 
@@ -79,7 +79,7 @@ git commit -m "docs: clarify baseline handoff (refs #5)"
 | DESIGN／schema／ENVIRONMENT | 依內容由 A/B 提案，PM 核准 | 跨版本、語意、介面或科學比較變更 |
 | 正式 aggregate／plot 與報告來源 | Report Lead | A 提供資料契約，B 解釋 scheduler 事件 |
 
-owner 表用於避免衝突，不是 GitHub 權限設定。實際帳號仍由 PM 指定。改共用檔案前，在 Issue／PR 寫清修改範圍與依賴；不要同時維護兩份互不相容的 canonical config／entry point。
+owner 表用於避免衝突，不是 GitHub 權限設定。實際帳號、存取與正式指派由使用者自行處理。改共用檔案前，在 Issue／PR 寫清修改範圍與依賴；不要同時維護兩份互不相容的 canonical config／entry point。
 
 ## 4. 介面與 schema 變更程序
 
@@ -131,11 +131,14 @@ A/B 關鍵 C++ 改動盡可能交叉審查，PM 處理設計、整合與接受�
 
 ## 7. 文件修訂與交接入口
 
-文件 r1 後若改 owner、時程、版本、驗收或工作範圍，更新文件修訂號／日期並在 PR 說明變更原因；Git 歷史保留完整差異。單純檢查清單尚未執行時不打勾。
+文件若改 owner、時程、版本、驗收或工作範圍，更新文件修訂號／日期並在 PR 說明變更原因；Git 歷史保留完整差異。單純檢查清單尚未執行時不打勾。
 
 - [Engineer A：環境、基準、流量與量測](ENGINEER_A_TASKS.zh-TW.md)
 - [Engineer B：排程器、tracing 與測試](ENGINEER_B_TASKS.zh-TW.md)
 - [PM 進度與未決事項](PM_STATUS.md)
 - [Issues 與里程碑](ISSUES.md)
+- [PM 決策與書面可行性驗收、分支保護設定](PM_DECISIONS.zh-TW.md)
 
-目前尚待 PM 確認：實際帳號、project license、accepted toolchain／ns-3 runtime、完整 A/B 契約、schema 正式版本、branch protection。文件／骨架已合併不會使這些 TODO 自動完成。
+目前尚待處理：使用者完成實際帳號／正式指派；PM 確認 project license、accepted toolchain／ns-3 runtime、完整 A/B 契約與 schema 正式版本；團隊加入後啟用一位核准人規則。文件／骨架已合併不會使這些 TODO 自動完成。
+
+修訂紀錄：r1 定義協作規範；r2 記錄基本保護的實際啟用、使用者自行處理成員設定，並連到 PM 決策清單。技術／科學驗收狀態未變。

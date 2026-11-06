@@ -27,3 +27,10 @@ scheduler improvement.
 8. Implemented/Tested/Planned/Blocked status and next milestones.
 
 Evidence index: TODO real log/data/figure links and canonical commands.
+
+## Prior feasibility gate — Nov 7–10
+
+Use the [PM decision register and written review checklist](PM_DECISIONS.zh-TW.md)
+for Engineer A environment/DL MU evidence, Engineer B source/queue-age findings,
+and the PM interface decision. Nov 10 is a written checkpoint in the existing
+schedule; no meeting or calendar invitation is planned at the user's request.
