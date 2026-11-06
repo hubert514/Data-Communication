@@ -39,3 +39,14 @@ for PM, rather than invented semester deadlines.
 
 Issue register: [ISSUES.md](ISSUES.md). Executed bootstrap validation and pending
 gates: [BOOTSTRAP.md](BOOTSTRAP.md).
+
+## Development handoff and version rules
+
+- [Engineer A task handoff (Traditional Chinese)](ENGINEER_A_TASKS.zh-TW.md)
+- [Engineer B task handoff (Traditional Chinese)](ENGINEER_B_TASKS.zh-TW.md)
+- [Shared version control, ownership and delivery rules](DEVELOPMENT_WORKFLOW.zh-TW.md)
+
+Bootstrap PR #13 was merged on 2026-11-07 under the user's explicit publication
+instruction. Handoff/document review does not complete any scientific acceptance
+gate or close the 12 checkpoint tasks; unknown toolchain, schema, runtime and
+role-account decisions remain TODO.
