@@ -1,0 +1,50 @@
+name: Role-owned project task
+description: Work with an explicit checkpoint gate and evidence
+title: "[Role] "
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: Owner role and GitHub handle
+      placeholder: Engineer A / Engineer B / Technical PM / Report Lead; handle if known
+    validations:
+      required: true
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone and target date (Asia/Taipei)
+    validations:
+      required: true
+  - type: textarea
+    id: deliverable
+    attributes:
+      label: Deliverable and scope
+      description: Cite README sections; mark planned/unimplemented work TODO.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Exact acceptance criteria
+      placeholder: "- [ ] Verifiable behavior and required evidence"
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and blockers
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence URLs or paths
+      description: Exact commands, logs, pinned SHAs, raw data and provenance; say TODO if pending.
+    validations:
+      required: true
+  - type: checkboxes
+    id: review
+    attributes:
+      label: Technical PM acceptance
+      options:
+        - label: Scientific/interface changes need PM review; completion requires executed or inspected evidence.

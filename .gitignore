@@ -1,0 +1,32 @@
+# Local upstream checkout, build products, evidence, and machine state
+.local/
+build/
+cmake-cache/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.exe
+*.pcap
+*.pcapng
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+# Preserve only documentation until real experiment provenance is reviewed
+results/*
+!results/README.md
+figures/*
+!figures/README.md
+# Local bootstrap working notes
+task_plan.md
+findings.md
+progress.md
