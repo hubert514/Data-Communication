@@ -1,0 +1,6 @@
+{
+  "repository": "https://gitlab.com/nsnam/ns-3-dev.git",
+  "tag": "ns-3.49",
+  "commit": "418210e8914e9f6bcb5cddbcc94a2cecb7853b68",
+  "status": "UNVERIFIED — candidate identity only; build and DL MU acceptance pending"
+}

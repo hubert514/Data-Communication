@@ -1,0 +1,22 @@
+name: Bootstrap tooling checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tooling:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Python and Bash syntax
+        run: |
+          python -m py_compile scripts/ns3_tools.py scripts/analyze.py tests/test_bootstrap.py
+          bash -n scripts/setup_ns3.sh scripts/build.sh scripts/smoke_ofdma.sh scripts/run.sh
+      - name: Check setup preservation and idempotency
+        run: python -m unittest discover -s tests -v
+      # TODO: accepted ns-3 build, DL MU trace gate and project behavior tests.
+      # This workflow only checks bootstrap tooling; it does not certify ns-3.
