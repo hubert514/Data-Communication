@@ -93,7 +93,7 @@ Limits and open items:
   single seed/run, single machine.
 - Large logs are not committed; their sha256 are in MANIFEST.txt and their accessible
   location is TODO.
-  
+
 ## Acceptance still required
 
 1. A: preserve configure/build and example command logs, compiler/OS, exact SHA.
