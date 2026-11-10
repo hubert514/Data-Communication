@@ -1,0 +1,27 @@
+Manual DL MU evidence (not produced by scripts/; hand-run)
+Date (UTC): 2026-11-10 (sha256 taken 02:44:34 UTC)
+Project SHA: 9a91cc10e1d515aae1db006c4929ddc5a154f669 (branch feature/simulation-environment, status clean)
+Upstream: ns-3.49 / 418210e8914e9f6bcb5cddbcc94a2cecb7853b68
+Env: Ubuntu 24.04.2 WSL2, g++ 13.3.0, CMake 3.28.3, Python 3.12.3, Ninja 1.11.1, build-profile=debug
+
+Example command (cwd .local/ns-3):
+python3 ns3 run 'wifi-he-network --udp=1 --downlink=1 --nStations=8 --maxMuStas=4 --dlAckType=MU-BAR --enableUlOfdma=0 --enableBsrp=0 --frequency=5 --channelWidth=20 --mcs=5 --guardInterval=800 --simulationTime=2s --distance=5 --RngSeed=1 --RngRun=1'
+
+Run 01: NS_LOG="RrMultiUserScheduler=level_all|prefix_time:HeFrameExchangeManager=level_info|prefix_time"
+  manual-dlmu-01/run.log  6204 lines  sha256 f0c868678f26196d68977f659617671b73e91e48e56d2ff71d593d757d6e259e
+Run 02: NS_LOG="WifiPhy=function|prefix_time"
+  manual-dlmu-02/run.log  91833 lines sha256 90a6ff17bb22979ba0bd24be4b32bb7d7bd8ddf24d1067ea2f5dafe276a56026
+Both returncode=0.
+
+Observed:
+- Scheduler: 364 DL MU decisions; PHY WifiPhy::Send: 364 HE_MU. All 364 timestamps identical (diff).
+- Every HE_MU: 4 users, one 52-tone RU each (RU 1-4), 1456 RUs total, all sent by the AP PHY.
+- STA-ID (AID) 1-4 and 5-8 alternate; AID n = MAC 00:00:00:00:00:0n; AP = ...:09.
+- PSDUs carry QOSDATA AP->STA (FromDS=1), tid=0.
+- Other frames: CTL_TRIGGER (preamble LONG) and CTL_BACKRESP (HE_TB, 1 user, 52-tone RU).
+  VERIFIED: Send(Ptr<WifiPsdu>) wrapper logs a second line, so raw counts are doubled (sort -u gives 363 triggers; 1452 BlockAck PSDUs)
+  (726/2 = 363 triggers, 2904/2 = 1452 BlockAcks = 363*4).
+Not confirmed: trigger subtype (inferred MU-BAR from dlAckType setting).
+Limits: official example only, not project B1; function log shows Send() entry, not PhyTxPsduBegin trace.
+dl_mu_gate stays TODO_REVIEW; PM/B review required.
+Last HE_MU: +1.995727200s, PPDU duration 5311.2us (UpdateCredits); last CTL_TRIGGER: +1.995433400s (belongs to the previous HE_MU). Start+duration+SIFS(16us) = 2.0010544s > 2 s stop time, so no trigger follows the last HE_MU: consistent with 364 HE_MU vs 363 triggers.
