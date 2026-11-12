@@ -12,7 +12,7 @@ recompute_output.txt         run: sched=manual-dlmu-01/run.log, phy=manual-dlmu-
 recompute_output_smoke_sched.txt   run: sched=smoke 01.log, phy=manual-dlmu-02/run.log
 
 == Raw logs (not committed) ==
-Download: TODO (link; verify it opens without login before filling)
+Download: https://github.com/user-attachments/files/34773499/a-env-01-logs.tar.gz (link; verify it opens without login before filling)
 Archive:  a-env-01-logs.tar.gz  (contains the whole .local/evidence directory)
 Archive sha256: 51e08ef26cab488ec0cd00a2bbceb9cb4d5d83a0a20b2a9fdf8546197a7dc903  (2.9 MB)
 
