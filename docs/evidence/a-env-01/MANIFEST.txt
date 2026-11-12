@@ -1,16 +1,28 @@
-A-ENV-01 evidence manifest (2026-11-10, Engineer A)
-project SHA: 9a91cc10e1d515aae1db006c4929ddc5a154f669
-upstream:    ns-3.49 / 418210e8914e9f6bcb5cddbcc94a2cecb7853b68
+A-ENV-01 evidence manifest (Engineer A)
+project SHA (base): 9a91cc10e1d515aae1db006c4929ddc5a154f669
+upstream:           ns-3.49 / 418210e8914e9f6bcb5cddbcc94a2cecb7853b68
 
-Committed (small, real, script-generated or hand-written notes):
-  setup_run_metadata.json   <- .local/evidence/20261110T012214Z-setup-42f72e11/run_metadata.json
-  build_run_metadata.json   <- .local/evidence/20261110T012353Z-build-a43a93e5/run_metadata.json
-  smoke_run_metadata.json   <- .local/evidence/20261110T013905Z-smoke-24d0991e/run_metadata.json
-  manual-dlmu-NOTES.txt     (hand-written; commands, counts, limits)
-  phy_hemu_first3.txt, sched_first5.txt   (excerpts, hand-extracted by grep/sed)
+== Committed in docs/evidence/a-env-01/ ==
+setup_run_metadata.json / build_run_metadata.json / smoke_run_metadata.json
+  (copies of .local/evidence/<run ID>/run_metadata.json, script-generated)
+manual-dlmu-NOTES.txt        hand-written notes: commands, counts, limits
+phy_hemu_first3.txt, sched_first5.txt   hand-extracted excerpts (see headers)
+recompute.sh                 recomputes counts from raw logs
+recompute_output.txt         run: sched=manual-dlmu-01/run.log, phy=manual-dlmu-02/run.log
+recompute_output_smoke_sched.txt   run: sched=smoke 01.log, phy=manual-dlmu-02/run.log
 
-Not committed (large; location TODO):
-  smoke 01.log          28362 lines  sha256 b3f7ab47b9ef297c7d27e3b5a830b54638bbc5918e01ca59a63b273f4ef837b3
-  manual-dlmu-01/run.log 6204 lines  sha256 f0c868678f26196d68977f659617671b73e91e48e56d2ff71d593d757d6e259e
-  manual-dlmu-02/run.log 91833 lines sha256 90a6ff17bb22979ba0bd24be4b32bb7d7bd8ddf24d1067ea2f5dafe276a56026
-  Accessible location: TODO (ask PM which durable storage the team uses)
+== Raw logs (not committed) ==
+Download: TODO (link; verify it opens without login before filling)
+Archive:  a-env-01-logs.tar.gz  (contains the whole .local/evidence directory)
+Archive sha256: 51e08ef26cab488ec0cd00a2bbceb9cb4d5d83a0a20b2a9fdf8546197a7dc903  (2.9 MB)
+
+Run ID / file                                   sha256
+20261110T012214Z-setup-42f72e11/01.log          e383300c37d957ffc4a7ddaf7ff46d77dd7decee5edc7d68d59810e39fb989ea  (setup: git clone)
+20261110T012353Z-build-a43a93e5/01.log          c6217c5c99e3493c8e83079ef6072e582400c0760bd72c1818468072025b7bff  (configure)
+20261110T012353Z-build-a43a93e5/02.log          4793cdb27d2d6998c703f37ca2ac6dbc65074934fd7613b9bc3514fd63fe450c  (build wifi-he-network)
+20261110T013905Z-smoke-24d0991e/01.log          b3f7ab47b9ef297c7d27e3b5a830b54638bbc5918e01ca59a63b273f4ef837b3  (smoke, 28362 lines)
+manual-dlmu-01/run.log  (hand run, not script)  f0c868678f26196d68977f659617671b73e91e48e56d2ff71d593d757d6e259e  (6204 lines)
+manual-dlmu-02/run.log  (hand run, not script)  90a6ff17bb22979ba0bd24be4b32bb7d7bd8ddf24d1067ea2f5dafe276a56026  (91833 lines)
+
+Verify after download:  tar xzf a-env-01-logs.tar.gz && sha256sum <files above>
+Recompute:              docs/evidence/a-env-01/recompute.sh <sched_log> <phy_log>
