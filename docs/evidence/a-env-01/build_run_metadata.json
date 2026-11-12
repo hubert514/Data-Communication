@@ -1,0 +1,73 @@
+{
+  "schema": "bootstrap-operation-v1",
+  "operation": "build",
+  "run_id": "20261110T012353Z-build-a43a93e5",
+  "status": "completed",
+  "started_at": "2026-11-10T01:23:53.349065+00:00",
+  "finished_at": "2026-11-10T01:29:14.704133+00:00",
+  "invocation": [
+    "/usr/bin/python3",
+    "/home/daniel/Data-Communication/scripts/ns3_tools.py",
+    "build"
+  ],
+  "working_directory": "/home/daniel/Data-Communication",
+  "project_sha": "9a91cc10e1d515aae1db006c4929ddc5a154f669",
+  "project_dirty": "",
+  "candidate": {
+    "repository": "https://gitlab.com/nsnam/ns-3-dev.git",
+    "tag": "ns-3.49",
+    "commit": "418210e8914e9f6bcb5cddbcc94a2cecb7853b68",
+    "status": "UNVERIFIED — candidate identity only; build and DL MU acceptance pending"
+  },
+  "upstream_sha": "418210e8914e9f6bcb5cddbcc94a2cecb7853b68",
+  "upstream_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "os": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+  "cmake": "cmake version 3.28.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+  "config": null,
+  "scheduler": null,
+  "seed": null,
+  "run": null,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "ns3",
+        "configure",
+        "--enable-examples",
+        "--enable-tests",
+        "--build-profile=debug"
+      ],
+      "cwd": "/home/daniel/Data-Communication/.local/ns-3",
+      "log": "01.log",
+      "started_at": "2026-11-10T01:23:53.381453+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-10T01:24:31.190347+00:00"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "ns3",
+        "build",
+        "wifi-he-network"
+      ],
+      "cwd": "/home/daniel/Data-Communication/.local/ns-3",
+      "log": "02.log",
+      "started_at": "2026-11-10T01:24:31.190624+00:00",
+      "returncode": 0,
+      "finished_at": "2026-11-10T01:29:14.703258+00:00"
+    }
+  ],
+  "checksums": {
+    "01.log": "c6217c5c99e3493c8e83079ef6072e582400c0760bd72c1818468072025b7bff",
+    "02.log": "4793cdb27d2d6998c703f37ca2ac6dbc65074934fd7613b9bc3514fd63fe450c"
+  },
+  "dl_mu_gate": "TODO_REVIEW",
+  "error": null,
+  "input_checksums": {
+    "configs/ns3-candidate.json": "815909afe5b4015f7adfb4e79f6a18bbcf662cbc48cee9162ec5562c4daed456",
+    "patches/series": "935359c440101d9bd42ef27636642e716e9f4398b64535785cf635ac97a1bda6",
+    "scripts/ns3_tools.py": "f760ff39d41d59361a613f2595638f4cabacae0a5c4b7e3141d280bd36d46199"
+  }
+}

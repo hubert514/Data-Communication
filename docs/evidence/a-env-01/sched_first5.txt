@@ -1,0 +1,6 @@
+# EXCERPT: first 5 scheduler lines matching "stations are being assigned" from manual-dlmu-01/run.log (verbatim, no edits).
++0.001006000s 4 stations are being assigned a 52-tones RU
++0.001794600s 4 stations are being assigned a 52-tones RU
++0.002973400s 4 stations are being assigned a 52-tones RU
++0.004524400s 4 stations are being assigned a 52-tones RU
++0.006564600s 4 stations are being assigned a 52-tones RU

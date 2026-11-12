@@ -1,0 +1,28 @@
+== scheduler decisions ==
+364
+== PHY HE_MU Send (MU path, single line each) ==
+364
+== timestamps identical? ==
+all times match
+== users per HE_MU ==
+    364 num User Infos: 4
+== RU types ==
+   1456 RU{52-tones
+== RU index per STA-ID ==
+    182 {STA-ID: 1, RU{52-tones/1
+    182 {STA-ID: 2, RU{52-tones/2
+    182 {STA-ID: 3, RU{52-tones/3
+    182 {STA-ID: 4, RU{52-tones/4
+    182 {STA-ID: 5, RU{52-tones/1
+    182 {STA-ID: 6, RU{52-tones/2
+    182 {STA-ID: 7, RU{52-tones/3
+    182 {STA-ID: 8, RU{52-tones/4
+== sending PHY pointers ==
+    364 WifiPhy:Send(0x61a2b5dc1c30
+== Trigger frames: raw vs wrapper-deduplicated ==
+raw lines: 726  unique lines: 363
+== BlockAck: raw vs deduplicated ==
+raw lines: 2904  PSDU-map lines: 1452
+== last HE_MU / last trigger ==
++1.995727200s
++1.995433400s

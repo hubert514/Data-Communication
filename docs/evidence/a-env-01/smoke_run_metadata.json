@@ -1,0 +1,76 @@
+{
+  "schema": "bootstrap-operation-v1",
+  "operation": "smoke",
+  "run_id": "20261110T013905Z-smoke-24d0991e",
+  "status": "executed_pending_dl_mu_review",
+  "started_at": "2026-11-10T01:39:05.138006+00:00",
+  "finished_at": "2026-11-10T01:39:27.697554+00:00",
+  "invocation": [
+    "/usr/bin/python3",
+    "/home/daniel/Data-Communication/scripts/ns3_tools.py",
+    "smoke"
+  ],
+  "working_directory": "/home/daniel/Data-Communication",
+  "project_sha": "9a91cc10e1d515aae1db006c4929ddc5a154f669",
+  "project_dirty": "",
+  "candidate": {
+    "repository": "https://gitlab.com/nsnam/ns-3-dev.git",
+    "tag": "ns-3.49",
+    "commit": "418210e8914e9f6bcb5cddbcc94a2cecb7853b68",
+    "status": "UNVERIFIED — candidate identity only; build and DL MU acceptance pending"
+  },
+  "upstream_sha": "418210e8914e9f6bcb5cddbcc94a2cecb7853b68",
+  "upstream_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "os": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+  "cmake": "cmake version 3.28.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+  "config": {
+    "udp": 1,
+    "downlink": 1,
+    "nStations": 8,
+    "maxMuStas": 4,
+    "dlAckType": "MU-BAR",
+    "enableUlOfdma": 0,
+    "enableBsrp": 0,
+    "frequency": 5,
+    "channelWidth": 20,
+    "mcs": 5,
+    "guardInterval": 800,
+    "simulationTime": "2s",
+    "distance": 5,
+    "RngSeed": 1,
+    "RngRun": 1
+  },
+  "scheduler": "upstream-RrMultiUserScheduler",
+  "seed": 1,
+  "run": 1,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "ns3",
+        "run",
+        "wifi-he-network --udp=1 --downlink=1 --nStations=8 --maxMuStas=4 --dlAckType=MU-BAR --enableUlOfdma=0 --enableBsrp=0 --frequency=5 --channelWidth=20 --mcs=5 --guardInterval=800 --simulationTime=2s --distance=5 --RngSeed=1 --RngRun=1"
+      ],
+      "cwd": "/home/daniel/Data-Communication/.local/ns-3",
+      "log": "01.log",
+      "started_at": "2026-11-10T01:39:05.417723+00:00",
+      "returncode": 0,
+      "environment_overrides": {
+        "NS_LOG": "RrMultiUserScheduler=level_all|prefix_time:MultiUserScheduler=level_all|prefix_time:HeFrameExchangeManager=level_debug|prefix_time"
+      },
+      "finished_at": "2026-11-10T01:39:27.697265+00:00"
+    }
+  ],
+  "checksums": {
+    "01.log": "b3f7ab47b9ef297c7d27e3b5a830b54638bbc5918e01ca59a63b273f4ef837b3"
+  },
+  "dl_mu_gate": "TODO_REVIEW",
+  "error": null,
+  "input_checksums": {
+    "configs/ns3-candidate.json": "815909afe5b4015f7adfb4e79f6a18bbcf662cbc48cee9162ec5562c4daed456",
+    "patches/series": "935359c440101d9bd42ef27636642e716e9f4398b64535785cf635ac97a1bda6",
+    "scripts/ns3_tools.py": "f760ff39d41d59361a613f2595638f4cabacae0a5c4b7e3141d280bd36d46199"
+  }
+}
