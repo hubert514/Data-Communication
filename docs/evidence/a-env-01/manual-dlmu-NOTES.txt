@@ -24,4 +24,4 @@ Observed:
 Not confirmed: trigger subtype (inferred MU-BAR from dlAckType setting).
 Limits: official example only, not project B1; function log shows Send() entry, not PhyTxPsduBegin trace.
 dl_mu_gate stays TODO_REVIEW; PM/B review required.
-Last HE_MU: +1.995727200s, PPDU duration 5311.2us (UpdateCredits); last CTL_TRIGGER: +1.995433400s (belongs to the previous HE_MU). Start+duration+SIFS(16us) = 2.0010544s > 2 s stop time, so no trigger follows the last HE_MU: consistent with 364 HE_MU vs 363 triggers.
+Last HE_MU: +1.995727200s, PPDU duration 5311.2us (UpdateCredits); last CTL_TRIGGER: +1.995433400s (belongs to the previous HE_MU). Actual stop time is 2.001 s (simulationTime 2 s + 1 ms client start offset, staticSetup=true default; wifi-he-network.cc lines 71, 405, 504). Start+duration+SIFS(16us, inferred) = 2.0010544s, 54.4 us after stop; without SIFS 2.0010112s, 11.2 us after stop. So no trigger follows the last HE_MU: consistent with 364 HE_MU vs 363 triggers. Margin is small.

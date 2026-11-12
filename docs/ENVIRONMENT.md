@@ -83,7 +83,10 @@ Official example `wifi-he-network` (smoke configuration, seed/run 1, 2 s, 8 STAs
   all sent by the AP PHY. STA-ID (AID) 1-4 and 5-8 alternate; AID n maps to MAC
   `00:00:00:00:00:0n`, AP is `...:09`. PSDUs are AP-to-STA QOSDATA.
 - 364 `HE_MU` versus 363 trigger frames: the last `HE_MU` starts at 1.9957272 s with a
-  5311.2 us PPDU, so its trigger would fall after the 2 s stop time.
+  5311.2 us PPDU. Start + duration + SIFS (16 us, inferred from the first exchange) = 2.0010544 s,
+  54.4 us after the actual stop time of 2.001 s (`simulationTime` 2 s + 1 ms client start offset,
+  `staticSetup=true`; wifi-he-network.cc lines 71, 405, 504). Without SIFS the end is 2.0010112 s,
+  still 11.2 us late. The margin is small.
 
 Limits and open items:
 
