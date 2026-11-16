@@ -1,7 +1,10 @@
 # Output contract and storage policy
 
-TODO / NOT IMPLEMENTED: no empirical CSVs or project result pipeline exists.
-Do not create dummy measurements. Local setup/build/example evidence lives in
+The official-example scheduler checkpoint now has real local candidate-age and
+RU-allocation CSVs under `.local/scheduler-checkpoint/`; its provenance and
+verified summary are indexed by `docs/evidence/b-scheduler-01/MANIFEST.md`.
+The project 4 LL / 4 BE empirical result pipeline remains NOT IMPLEMENTED.
+Do not create dummy measurements. Local setup/build evidence lives in
 `.local/evidence/`; preserve/share real evidence and add its location to issues.
 Results are ignored by default. Explicitly select small real outputs only after
 provenance review; use durable external storage for large raw data/PCAPs and

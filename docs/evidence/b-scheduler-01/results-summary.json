@@ -1,0 +1,53 @@
+{
+  "schema": "b-scheduler-checkpoint-summary-v1",
+  "project_base_sha": "9a91cc10e1d515aae1db006c4929ddc5a154f669",
+  "upstream_sha": "418210e8914e9f6bcb5cddbcc94a2cecb7853b68",
+  "baseline": {
+    "label": "R0",
+    "returncode": 0,
+    "dl_he_mu_count": 364,
+    "phy_user_allocations": 1456
+  },
+  "non_regression": {
+    "labels": ["R0", "R1_FINAL", "R2_FINAL"],
+    "dl_he_mu_count_each": 364,
+    "phy_user_allocations_each": 1456,
+    "ordered_phy_tuples_identical": true,
+    "trace_final_matches_phy": true,
+    "candidate_rows_with_age": 1456,
+    "minimum_candidate_head_mpdu_age_ns": 6000,
+    "maximum_candidate_head_mpdu_age_ns": 61631000,
+    "passed": true
+  },
+  "prototype_fixture": {
+    "baseline_label": "FIX_RR",
+    "prototype_label": "FIX_QA",
+    "baseline_dl_he_mu_count": 368,
+    "prototype_dl_he_mu_count": 367,
+    "selected_sta_set_changes": 2,
+    "first_change_time_ns": 3218800,
+    "rr_selected_aids": [1, 2, 3, 4],
+    "queue_age_selected_aids": [5, 6, 7, 8],
+    "rr_group_age_ns": 218800,
+    "queue_age_group_age_ns": 265980,
+    "legal_ru_allocations": true,
+    "final_is_eligible": true,
+    "selected_oldest_four": true,
+    "trace_final_matches_phy": true,
+    "passed": true
+  },
+  "ns3_test_suites": {
+    "wifi-mac-ofdma": "PASS (116.242 s)",
+    "wifi-ru-allocation": "PASS",
+    "wifi-mac-queue": "PASS",
+    "wifi-queue-scheduler": "PASS",
+    "wifi-traced-callback-typedef": "PASS"
+  },
+  "project_bootstrap_tests": "PASS (6/6)",
+  "claims_not_made": [
+    "application end-to-end latency",
+    "throughput improvement",
+    "packet-delay improvement",
+    "LL/BE performance improvement"
+  ]
+}
