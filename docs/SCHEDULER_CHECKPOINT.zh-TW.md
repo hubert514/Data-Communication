@@ -15,8 +15,11 @@ ns-3 基底：`418210e8914e9f6bcb5cddbcc94a2cecb7853b68` (ns-3.49)
 | class-agnostic queue-age prototype | **IMPLEMENTED / TESTED / PASSED** | fixture 中 selected-STA set 改變 2 次 |
 | 官方 ns-3 相關 test suites | **TESTED / PASSED** | 5 suites PASS |
 | Engineer A raw archive 獨立重算 | **BLOCKED** | 檔案需 repo login，本機不存在 raw archive |
-| 專案 4 LL / 4 BE baseline 整合 | **NOT IMPLEMENTED** | Engineer A 專案情境尚未出現於本地 main |
-| LL-aware policy / 效能改善宣稱 | **NOT IMPLEMENTED** | 本階段僅驗證 MAC scheduler 可觀測性與功能差異 |
+| 專案 4 LL / 4 BE baseline 整合 | **IMPLEMENTED / TESTED / PASSED** | 見 `MIXED_TRAFFIC_CHECKPOINT.zh-TW.md` |
+| LL-aware policy / 效能改善宣稱 | **NOT IMPLEMENTED** | class-agnostic E2 單一 seed 不支持改善宣稱 |
+
+> 後續 1 AP / 8 STA、4 LL / 4 BE 專案場景、真實 metrics、E1/E2 與圖表已完成；
+> 請以 [`MIXED_TRAFFIC_CHECKPOINT.zh-TW.md`](MIXED_TRAFFIC_CHECKPOINT.zh-TW.md) 為最新 check-point 報告。
 
 ## 2. 實作內容
 

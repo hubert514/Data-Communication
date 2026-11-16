@@ -1,6 +1,6 @@
 # Latency-Aware and Fair OFDMA Scheduling in Wi-Fi 6 (ns-3)
 
-> **Status:** Planning / pre-implementation (2026-11-06)  
+> **Status:** Scheduler check-point implemented and verified (2026-11-17)
 > **Course:** Data Communication — semester project  
 > **Team:** 4 members: 2 implementation engineers, 1 technical PM, 1 evaluation/report lead  
 > **Next milestone:** Progress checkpoint during **2026-11-16 to 2026-11-22** (exact presentation date TBD)
@@ -24,7 +24,16 @@ This project studies downlink (DL) Wi-Fi 6 / IEEE 802.11ax OFDMA scheduling in n
 
 **Not in initial scope:** Full reproduction of LOMAS, production Wi-Fi firmware, uplink scheduling, joint PHY/link adaptation optimization, novel 802.11 standard changes, or dynamic RU sizing. Adaptive RU allocation and mixed AC_VO/AC_BE experiments are possible **stretch goals** after the core comparisons work.
 
-**Important:** This is a project plan, **not a claim that code is already written or experiments have been run**. Record all actual findings as they become available.
+The original sections below remain the study plan. Implemented results are
+reported separately so planned values are not confused with measurements:
+
+- [Scheduler instrumentation report](docs/SCHEDULER_CHECKPOINT.zh-TW.md)
+- [4 LL / 4 BE mixed-traffic check-point](docs/MIXED_TRAFFIC_CHECKPOINT.zh-TW.md)
+- [Seed-1 evidence manifest](docs/evidence/b-mixed-traffic-01/MANIFEST.md)
+
+Current verified scope: official RR evidence, observation-only queue-age and RU
+traces, a disabled-by-default class-agnostic age prototype, and a project-specific
+1 AP / 8 STA paired E1/E2 run. LL-aware and fairness policies remain future work.
 
 ## 2. Why these baselines?
 

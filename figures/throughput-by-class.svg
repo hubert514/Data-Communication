@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="430" viewBox="0 0 760 430" role="img">
+<title>Per-class throughput</title>
+<rect width="760" height="430" fill="#ffffff"/>
+<text x="90" y="32" font-family="sans-serif" font-size="20" font-weight="600">Per-class throughput</text>
+<text x="90" y="52" font-family="sans-serif" font-size="12" fill="#475569">Source: validated class-summary.csv; unit: Mbit/s</text>
+<line x1="90" y1="350.00" x2="730" y2="350.00" stroke="#e2e8f0"/>
+<text x="80" y="354.00" text-anchor="end" font-family="sans-serif" font-size="11" fill="#475569">0.00</text>
+<line x1="90" y1="293.00" x2="730" y2="293.00" stroke="#e2e8f0"/>
+<text x="80" y="297.00" text-anchor="end" font-family="sans-serif" font-size="11" fill="#475569">7.36</text>
+<line x1="90" y1="236.00" x2="730" y2="236.00" stroke="#e2e8f0"/>
+<text x="80" y="240.00" text-anchor="end" font-family="sans-serif" font-size="11" fill="#475569">14.72</text>
+<line x1="90" y1="179.00" x2="730" y2="179.00" stroke="#e2e8f0"/>
+<text x="80" y="183.00" text-anchor="end" font-family="sans-serif" font-size="11" fill="#475569">22.08</text>
+<line x1="90" y1="122.00" x2="730" y2="122.00" stroke="#e2e8f0"/>
+<text x="80" y="126.00" text-anchor="end" font-family="sans-serif" font-size="11" fill="#475569">29.44</text>
+<line x1="90" y1="65.00" x2="730" y2="65.00" stroke="#e2e8f0"/>
+<text x="80" y="69.00" text-anchor="end" font-family="sans-serif" font-size="11" fill="#475569">36.79</text>
+<text x="250.00" y="378" text-anchor="middle" font-family="sans-serif" font-size="13">LL</text>
+<rect x="200.00" y="345.05" width="46.00" height="4.95" fill="#2563eb"/>
+<text x="223.00" y="339.05" text-anchor="middle" font-family="sans-serif" font-size="11">0.639</text>
+<rect x="254.00" y="345.05" width="46.00" height="4.95" fill="#f97316"/>
+<text x="277.00" y="339.05" text-anchor="middle" font-family="sans-serif" font-size="11">0.639</text>
+<text x="570.00" y="378" text-anchor="middle" font-family="sans-serif" font-size="13">BE</text>
+<rect x="520.00" y="102.17" width="46.00" height="247.83" fill="#2563eb"/>
+<text x="543.00" y="96.17" text-anchor="middle" font-family="sans-serif" font-size="11">31.995</text>
+<rect x="574.00" y="102.17" width="46.00" height="247.83" fill="#f97316"/>
+<text x="597.00" y="96.17" text-anchor="middle" font-family="sans-serif" font-size="11">31.995</text>
+<rect x="90" y="398" width="12" height="12" fill="#2563eb"/>
+<text x="108" y="408" font-family="sans-serif" font-size="12">E1-RR-seed1</text>
+<rect x="245" y="398" width="12" height="12" fill="#f97316"/>
+<text x="263" y="408" font-family="sans-serif" font-size="12">E2-QueueAge-seed1</text>
+</svg>

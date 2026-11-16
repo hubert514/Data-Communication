@@ -1,0 +1,4 @@
+traffic_class,baseline_run_id,treatment_run_id,baseline_throughput_mbps,treatment_throughput_mbps,throughput_delta_mbps,baseline_mean_delay_ms,treatment_mean_delay_ms,mean_delay_delta_ms,baseline_p95_delay_ms,treatment_p95_delay_ms,p95_delay_delta_ms
+LL,E1-RR-seed1,E2-QueueAge-seed1,0.638720000,0.638720000,0.000000000,0.913537,2.047962,1.134425,1.542850,3.043950,1.501100
+BE,E1-RR-seed1,E2-QueueAge-seed1,31.994880000,31.994880000,0.000000000,1.911540,1.905572,-0.005968,2.509783,2.480433,-0.029350
+ALL,E1-RR-seed1,E2-QueueAge-seed1,32.633600000,32.633600000,0.000000000,1.804786,1.920803,0.116017,2.484183,2.540458,0.056275

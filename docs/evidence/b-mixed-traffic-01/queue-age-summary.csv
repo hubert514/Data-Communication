@@ -1,0 +1,7 @@
+run_id,traffic_class,sample_definition,sample_count,mean_age_ms,p50_age_ms,p95_age_ms,max_age_ms
+E1-RR-seed1,LL,eligible_queue_head_candidate,1996,0.702337,0.717200,1.331650,2.028000
+E1-RR-seed1,BE,eligible_queue_head_candidate,12480,1.170615,1.112425,1.790950,2.051075
+E1-RR-seed1,ALL,eligible_queue_head_candidate,14476,1.106047,1.092075,1.769425,2.051075
+E2-QueueAge-seed1,LL,eligible_queue_head_candidate,1996,1.836762,1.803300,2.832750,3.282700
+E2-QueueAge-seed1,BE,eligible_queue_head_candidate,12480,1.167958,1.115800,1.769000,2.024900
+E2-QueueAge-seed1,ALL,eligible_queue_head_candidate,14476,1.260175,1.152000,2.001200,3.282700
