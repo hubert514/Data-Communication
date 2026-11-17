@@ -1,0 +1,260 @@
+diff --git a/src/wifi/model/he/rr-multi-user-scheduler.h b/src/wifi/model/he/rr-multi-user-scheduler.h
+--- a/src/wifi/model/he/rr-multi-user-scheduler.h
++++ b/src/wifi/model/he/rr-multi-user-scheduler.h
+@@ -193,6 +193,24 @@
+                                    const std::string& status);
+
+     /**
++     * Emit observation-only scheduler mechanism state. Queue occupancy is read
++     * through const counter accessors and no additional MPDU lookup is made.
++     *
++     * @param info station information
++     * @param phase observation phase
++     * @param order station order in this phase
++     * @param tid examined TID, or -1 when no queue is examined
++     * @param ac examined access category
++     * @param selected whether the station is selected in the finalized TXVECTOR
++     */
++    void TraceMechanismObservation(const MasterInfo& info,
++                                   const std::string& phase,
++                                   uint32_t order,
++                                   int16_t tid,
++                                   AcIndex ac,
++                                   bool selected);
++
++    /**
+      * Reorder the current per-AC station list by oldest queue-head MPDU timestamp.
+      * This class-agnostic prototype is active only when UseQueueAgePriority is true.
+      * Stations and TIDs are still checked by the unmodified RR eligibility path.
+@@ -238,9 +256,22 @@
+         m_candidateObservation; //!< existing RR candidate-loop observations
+     TracedCallback<uint64_t,
+                    uint8_t,
++                   std::string,
++                   uint32_t,
+                    uint16_t,
+                    Mac48Address,
++                   int16_t,
++                   AcIndex,
++                   double,
++                   uint32_t,
++                   uint32_t,
++                   bool>
++        m_mechanismObservation; //!< observation-only credit/order/queue state
++    TracedCallback<uint64_t,
+                    uint8_t,
++                   uint16_t,
++                   Mac48Address,
++                   uint8_t,
+                    RuType,
+                    std::size_t,
+                    uint8_t,
+diff --git a/src/wifi/model/he/rr-multi-user-scheduler.cc b/src/wifi/model/he/rr-multi-user-scheduler.cc
+--- a/src/wifi/model/he/rr-multi-user-scheduler.cc
++++ b/src/wifi/model/he/rr-multi-user-scheduler.cc
+@@ -103,7 +103,12 @@
+                 "FinalAllocation",
+                 "Final STA and RU allocation after RR RU finalization.",
+                 MakeTraceSourceAccessor(&RrMultiUserScheduler::m_finalAllocation),
+-                "ns3::RrMultiUserScheduler::FinalAllocationCallback");
++                "ns3::RrMultiUserScheduler::FinalAllocationCallback")
++            .AddTraceSource(
++                "MechanismObservation",
++                "Observation-only credit order and const queue occupancy counters.",
++                MakeTraceSourceAccessor(&RrMultiUserScheduler::m_mechanismObservation),
++                "ns3::RrMultiUserScheduler::MechanismObservationCallback");
+     return tid;
+ }
+
+@@ -809,6 +814,17 @@
+         tids.push_back(currTid);
+     }
+
++    uint32_t creditOrder = 0;
++    for (const auto& station : m_staListDl[primaryAc])
++    {
++        TraceMechanismObservation(station,
++                                  "credit_order_before_selection",
++                                  creditOrder++,
++                                  -1,
++                                  primaryAc,
++                                  false);
++    }
++
+     if (m_useQueueAgePriority)
+     {
+         ApplyQueueAgePriority(primaryAc, tids);
+@@ -1013,9 +1029,10 @@
+     const int64_t timestampNs = hasMpdu ? mpdu->GetTimestamp().GetNanoSeconds() : 0;
+     const int64_t ageNs = hasMpdu ? (Simulator::Now() - mpdu->GetTimestamp()).GetNanoSeconds() : 0;
+
++    const auto observationOrder = m_observationScanOrder++;
+     m_candidateObservation(m_currentObservationDecision,
+                            m_linkId,
+-                           m_observationScanOrder++,
++                           observationOrder,
+                            info.aid,
+                            info.address,
+                            tid,
+@@ -1025,9 +1042,48 @@
+                            timestampNs,
+                            ageNs,
+                            status);
++    TraceMechanismObservation(info,
++                              "candidate_" + status,
++                              observationOrder,
++                              tid,
++                              ac,
++                              false);
+ }
+
+ void
++RrMultiUserScheduler::TraceMechanismObservation(const MasterInfo& info,
++                                                const std::string& phase,
++                                                uint32_t order,
++                                                int16_t tid,
++                                                AcIndex ac,
++                                                bool selected)
++{
++    uint32_t queuePackets = 0;
++    uint32_t queueBytes = 0;
++    if (tid >= 0)
++    {
++        const auto queueId = MakeWifiUnicastQueueId(WIFI_QOSDATA_QUEUE,
++                                                    info.address,
++                                                    static_cast<uint8_t>(tid));
++        const auto queue = m_apMac->GetQosTxop(ac)->GetWifiMacQueue();
++        queuePackets = queue->GetNPackets(queueId);
++        queueBytes = queue->GetNBytes(queueId);
++    }
++    m_mechanismObservation(m_currentObservationDecision,
++                           m_linkId,
++                           phase,
++                           order,
++                           info.aid,
++                           info.address,
++                           tid,
++                           ac,
++                           info.credits,
++                           queuePackets,
++                           queueBytes,
++                           selected);
++}
++
++void
+ RrMultiUserScheduler::FinalizeTxVector(WifiTxVector& txVector)
+ {
+     // Do not log txVector because GetTxVectorForUlMu() left RUs undefined and
+@@ -1128,6 +1184,21 @@
+
+     // sort the list in decreasing order of credits
+     staList.sort([](const MasterInfo& a, const MasterInfo& b) { return a.credits > b.credits; });
++
++    if (txVector.IsDlMu())
++    {
++        uint32_t creditOrder = 0;
++        for (const auto& station : staList)
++        {
++            TraceMechanismObservation(
++                station,
++                "credit_order_after_update",
++                creditOrder++,
++                -1,
++                m_edca->GetAccessCategory(),
++                txVector.GetHeMuUserInfoMap().contains(station.aid));
++        }
++    }
+ }
+
+ MultiUserScheduler::DlMuInfo
+diff --git a/scratch/wifi-ofdma-mixed-traffic.cc b/scratch/wifi-ofdma-mixed-traffic.cc
+--- a/scratch/wifi-ofdma-mixed-traffic.cc
++++ b/scratch/wifi-ofdma-mixed-traffic.cc
+@@ -63,6 +63,7 @@
+ std::ofstream g_mapping;
+ std::ofstream g_packets;
+ std::ofstream g_scheduler;
++std::ofstream g_mechanism;
+ std::ofstream g_phy;
+ std::string g_runId;
+
+@@ -228,6 +229,34 @@
+ }
+
+ void
++MechanismObservation(uint64_t decisionId,
++                     uint8_t linkId,
++                     std::string phase,
++                     uint32_t order,
++                     uint16_t aid,
++                     Mac48Address address,
++                     int16_t tid,
++                     AcIndex ac,
++                     double creditUs,
++                     uint32_t queuePackets,
++                     uint32_t queueBytes,
++                     bool selected)
++{
++    const auto flow = FindFlow(address);
++    g_mechanism << g_runId << ',' << decisionId << ',' << phase << ','
++                << Simulator::Now().GetNanoSeconds() << ',' << +linkId << ',' << order << ',' << aid
++                << ',' << address << ',';
++    if (tid >= 0)
++    {
++        g_mechanism << tid;
++    }
++    g_mechanism << ',' << AcName(ac) << ',' << std::setprecision(17) << creditUs << ','
++                << queuePackets << ',' << queueBytes << ',' << selected << ','
++                << (flow ? flow->trafficClass : "UNKNOWN") << ','
++                << (flow ? std::to_string(flow->staIndex) : "") << '\n';
++}
++
++void
+ PhyTx(WifiConstPsduMap psduMap, WifiTxVector txVector, double txPowerW)
+ {
+     if (!txVector.IsDlMu() || txVector.GetPreambleType() != WIFI_PREAMBLE_HE_MU)
+@@ -247,6 +276,7 @@
+               << (flow ? std::to_string(flow->staIndex) : "") << ','
+               << WifiRu::GetRuType(userInfo.ru) << ',' << WifiRu::GetIndex(userInfo.ru) << ','
+               << +userInfo.mcs << ',' << +userInfo.nss << ','
++              << (psduIt == psduMap.end() ? 0 : psduIt->second->GetNMpdus()) << ','
+               << (psduIt == psduMap.end() ? 0 : psduIt->second->GetSize()) << '\n';
+     }
+ }
+@@ -306,14 +336,18 @@
+     OpenOutput(g_mapping, outputDir + "/mapping.csv");
+     OpenOutput(g_packets, outputDir + "/packet-events.csv");
+     OpenOutput(g_scheduler, outputDir + "/scheduler.csv");
++    OpenOutput(g_mechanism, outputDir + "/mechanism.csv");
+     OpenOutput(g_phy, outputDir + "/phy.csv");
+     g_packets << "run_id,event,time_ns,flow_id,traffic_class,sta_index,aid,mac,seq,"
+                  "bytes,source_timestamp_ns,delay_ns\n";
+     g_scheduler << "run_id,decision_id,phase,time_ns,link_id,access_category,scan_order,aid,"
+                    "mac,tid,mpdu_uid,mpdu_timestamp_ns,mpdu_age_ns,eligibility_status,"
+                    "final_selected,ru_type,ru_index,mcs,nss,traffic_class,sta_index\n";
++    g_mechanism << "run_id,decision_id,phase,time_ns,link_id,order,aid,mac,tid,"
++                   "access_category,credit_us,queue_packets,queue_bytes,selected,traffic_class,"
++                   "sta_index\n";
+     g_phy << "run_id,phy_sequence,time_ns,aid,mac,traffic_class,sta_index,ru_type,ru_index,"
+-             "mcs,nss,psdu_bytes\n";
++             "mcs,nss,mpdu_count,psdu_bytes\n";
+
+     Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",
+                        EnumValue(WifiAcknowledgment::DL_MU_BAR_BA_SEQUENCE));
+@@ -450,6 +484,8 @@
+     scheduler->TraceConnectWithoutContext("CandidateObservation",
+                                           MakeCallback(&CandidateObservation));
+     scheduler->TraceConnectWithoutContext("FinalAllocation", MakeCallback(&FinalAllocation));
++    scheduler->TraceConnectWithoutContext("MechanismObservation",
++                                          MakeCallback(&MechanismObservation));
+     apWifiDevice->GetPhy(0)->TraceConnectWithoutContext("PhyTxPsduBegin", MakeCallback(&PhyTx));
+
+     Simulator::Schedule(NanoSeconds(1),
+@@ -468,6 +504,7 @@
+     g_mapping.close();
+     g_packets.close();
+     g_scheduler.close();
++    g_mechanism.close();
+     g_phy.close();
+     return 0;
+ }

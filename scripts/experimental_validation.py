@@ -498,6 +498,8 @@ def aggregate(args):
                     "rr": rr,
                     "queue_age": qa,
                     "queue_age_minus_rr": qa - rr,
+                    "queue_age_over_rr": qa / rr if rr != 0 else "",
+                    "percent_change": (qa - rr) / rr * 100 if rr != 0 else "",
                 }
             )
 
@@ -533,6 +535,22 @@ def aggregate(args):
                     "scheduler": "queue-age-minus-rr",
                     "metric": metric,
                     **numeric_summary(values),
+                }
+            )
+            ratios = [
+                row["queue_age_over_rr"]
+                for row in paired_rows
+                if row["be_load_mbps_per_flow"] == load
+                and row["metric"] == metric
+                and row["queue_age_over_rr"] != ""
+            ]
+            stats_rows.append(
+                {
+                    "summary_type": "paired_ratio",
+                    "be_load_mbps_per_flow": load,
+                    "scheduler": "queue-age-over-rr",
+                    "metric": metric,
+                    **numeric_summary(ratios),
                 }
             )
 
@@ -694,7 +712,7 @@ def aggregate(args):
         "incomplete_pairs": incomplete,
         "statistical_unit": "one matched RNG run",
         "ci_method": "two-sided 95% Student t interval for n>=3; no interval for n<3",
-        "small_sample_warning": "n=3 intervals are descriptive and wide; no significance claim is made",
+        "interpretation_warning": "n=10 paired-run intervals are descriptive under the stated Student-t assumptions; no automatic significance or generality claim is made",
         "all_validations_passed": all(row["validation_status"] == "PASSED" for row in verification_rows),
         "all_stored_checksums_match": all(
             row["stored_checksums_match"] == "true" for row in verification_rows
