@@ -1,0 +1,138 @@
+{
+  "schema": "instrumentation-nonregression-v1",
+  "all_exact": true,
+  "comparisons": [
+    {
+      "scheduler": "rr",
+      "artifact": "mapping.csv",
+      "baseline_rows": 8,
+      "instrumented_rows": 8,
+      "common_fields": "flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "packet-events.csv",
+      "baseline_rows": 37320,
+      "instrumented_rows": 37320,
+      "common_fields": "event|time_ns|flow_id|traffic_class|sta_index|aid|mac|seq|bytes|source_timestamp_ns|delay_ns",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "scheduler.csv",
+      "baseline_rows": 103832,
+      "instrumented_rows": 103832,
+      "common_fields": "decision_id|phase|time_ns|link_id|access_category|scan_order|aid|mac|tid|mpdu_uid|mpdu_timestamp_ns|mpdu_age_ns|eligibility_status|final_selected|ru_type|ru_index|mcs|nss|traffic_class|sta_index",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "phy.csv",
+      "baseline_rows": 14476,
+      "instrumented_rows": 14476,
+      "common_fields": "phy_sequence|time_ns|aid|mac|traffic_class|sta_index|ru_type|ru_index|mcs|nss|psdu_bytes",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "packet-summary.csv",
+      "baseline_rows": 18660,
+      "instrumented_rows": 18660,
+      "common_fields": "flow_id|traffic_class|sta_index|aid|mac|seq|bytes|tx_time_ns|rx_time_ns|delay_ms|status",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "flow-summary.csv",
+      "baseline_rows": 8,
+      "instrumented_rows": 8,
+      "common_fields": "flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns|measurement_duration_s|tx_packets|rx_packets|tx_bytes|rx_bytes|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "class-summary.csv",
+      "baseline_rows": 3,
+      "instrumented_rows": 3,
+      "common_fields": "traffic_class|flow_count|tx_packets|rx_packets|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms|jain_throughput",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "rr",
+      "artifact": "queue-age-summary.csv",
+      "baseline_rows": 3,
+      "instrumented_rows": 3,
+      "common_fields": "traffic_class|sample_definition|sample_count|mean_age_ms|p50_age_ms|p95_age_ms|max_age_ms",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "mapping.csv",
+      "baseline_rows": 8,
+      "instrumented_rows": 8,
+      "common_fields": "flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "packet-events.csv",
+      "baseline_rows": 37320,
+      "instrumented_rows": 37320,
+      "common_fields": "event|time_ns|flow_id|traffic_class|sta_index|aid|mac|seq|bytes|source_timestamp_ns|delay_ns",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "scheduler.csv",
+      "baseline_rows": 47084,
+      "instrumented_rows": 47084,
+      "common_fields": "decision_id|phase|time_ns|link_id|access_category|scan_order|aid|mac|tid|mpdu_uid|mpdu_timestamp_ns|mpdu_age_ns|eligibility_status|final_selected|ru_type|ru_index|mcs|nss|traffic_class|sta_index",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "phy.csv",
+      "baseline_rows": 14476,
+      "instrumented_rows": 14476,
+      "common_fields": "phy_sequence|time_ns|aid|mac|traffic_class|sta_index|ru_type|ru_index|mcs|nss|psdu_bytes",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "packet-summary.csv",
+      "baseline_rows": 18660,
+      "instrumented_rows": 18660,
+      "common_fields": "flow_id|traffic_class|sta_index|aid|mac|seq|bytes|tx_time_ns|rx_time_ns|delay_ms|status",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "flow-summary.csv",
+      "baseline_rows": 8,
+      "instrumented_rows": 8,
+      "common_fields": "flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns|measurement_duration_s|tx_packets|rx_packets|tx_bytes|rx_bytes|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "class-summary.csv",
+      "baseline_rows": 3,
+      "instrumented_rows": 3,
+      "common_fields": "traffic_class|flow_count|tx_packets|rx_packets|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms|jain_throughput",
+      "exact_common_rows_equal": "true"
+    },
+    {
+      "scheduler": "queue-age",
+      "artifact": "queue-age-summary.csv",
+      "baseline_rows": 3,
+      "instrumented_rows": 3,
+      "common_fields": "traffic_class|sample_definition|sample_count|mean_age_ms|p50_age_ms|p95_age_ms|max_age_ms",
+      "exact_common_rows_equal": "true"
+    }
+  ],
+  "excluded_fields": [
+    "run_id",
+    "new mpdu_count field absent from legacy PHY trace"
+  ]
+}

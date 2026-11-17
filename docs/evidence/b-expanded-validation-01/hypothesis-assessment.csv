@@ -1,0 +1,19 @@
+be_load_mbps_per_flow,hypothesis,status,observable,rr_value,queue_age_value,paired_delta,limitation
+4,H1_BE_queue_heads_are_older,UNSUPPORTED,mean eligible BE queue-head age minus LL age,-0.3494155951846083,-0.36932892602295325,-0.019913330838344956,"candidate queue-head samples, not full queue residence distributions"
+4,H2_service_shifts_toward_BE,UNSUPPORTED,paired change in BE share of final user allocations,,,0.0,allocation share does not reveal bytes aggregated per allocation
+4,H3_LL_becomes_less_competitive,UNSUPPORTED,paired change in mean LL service-opportunity gap,,,0.0,class-level gap; low rate also controls queue availability
+4,H4_airtime_credit_interaction,INCONCLUSIVE,airtime-credit values at candidate sorting and final selection,,,,current observation trace does not record credits
+4,H5_waiting_changes_without_throughput_change,SUPPORTED,paired LL mean-delay and aggregate-throughput changes,,,delay=0.017613400; throughput=0.000000000,"association under the tested configuration, not causal isolation"
+4,H6_backlog_or_aggregation_controls_decisions,INCONCLUSIVE,queue depth and A-MPDU membership at each final decision,,,,neither queue depth nor aggregate membership is recorded
+8,H1_BE_queue_heads_are_older,UNSUPPORTED,mean eligible BE queue-head age minus LL age,0.4789492073209879,-0.6494576861472089,-1.1284068934681968,"candidate queue-head samples, not full queue residence distributions"
+8,H2_service_shifts_toward_BE,UNSUPPORTED,paired change in BE share of final user allocations,,,0.0,allocation share does not reveal bytes aggregated per allocation
+8,H3_LL_becomes_less_competitive,SUPPORTED,paired change in mean LL service-opportunity gap,,,0.0021461847389556256,class-level gap; low rate also controls queue availability
+8,H4_airtime_credit_interaction,INCONCLUSIVE,airtime-credit values at candidate sorting and final selection,,,,current observation trace does not record credits
+8,H5_waiting_changes_without_throughput_change,SUPPORTED,paired LL mean-delay and aggregate-throughput changes,,,delay=1.126577300; throughput=0.000000000,"association under the tested configuration, not causal isolation"
+8,H6_backlog_or_aggregation_controls_decisions,INCONCLUSIVE,queue depth and A-MPDU membership at each final decision,,,,neither queue depth nor aggregate membership is recorded
+12,H1_BE_queue_heads_are_older,SUPPORTED,mean eligible BE queue-head age minus LL age,86.0044388726491,15.157925207107805,-70.8465136655413,"candidate queue-head samples, not full queue residence distributions"
+12,H2_service_shifts_toward_BE,SUPPORTED,paired change in BE share of final user allocations,,,0.27477188937688357,allocation share does not reveal bytes aggregated per allocation
+12,H3_LL_becomes_less_competitive,SUPPORTED,paired change in mean LL service-opportunity gap,,,39.781870955270946,class-level gap; low rate also controls queue availability
+12,H4_airtime_credit_interaction,INCONCLUSIVE,airtime-credit values at candidate sorting and final selection,,,,current observation trace does not record credits
+12,H5_waiting_changes_without_throughput_change,UNSUPPORTED,paired LL mean-delay and aggregate-throughput changes,,,delay=34.141396500; throughput=1.939392000,"association under the tested configuration, not causal isolation"
+12,H6_backlog_or_aggregation_controls_decisions,INCONCLUSIVE,queue depth and A-MPDU membership at each final decision,,,,neither queue depth nor aggregate membership is recorded
