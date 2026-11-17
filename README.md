@@ -30,6 +30,7 @@ reported separately so planned values are not confused with measurements:
 - [Scheduler instrumentation report](docs/SCHEDULER_CHECKPOINT.zh-TW.md)
 - [4 LL / 4 BE mixed-traffic check-point](docs/MIXED_TRAFFIC_CHECKPOINT.zh-TW.md)
 - [Seed-1 evidence manifest](docs/evidence/b-mixed-traffic-01/MANIFEST.md)
+- [RR / Queue-Age multi-run experimental validation](docs/EXPERIMENTAL_VALIDATION.zh-TW.md)
 
 Current verified scope: official RR evidence, observation-only queue-age and RU
 traces, a disabled-by-default class-agnostic age prototype, and a project-specific
