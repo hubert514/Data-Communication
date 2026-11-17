@@ -279,6 +279,9 @@ def analyze(output_dir, write_outputs=True):
         int(row["lost_packets"]) == int(row["tx_packets"]) - int(row["rx_packets"])
         for row in flow_rows
     )
+    checks["all_packet_delays_nonnegative"] = all(
+        not row["delay_ms"] or float(row["delay_ms"]) >= 0 for row in packet_rows
+    )
     checks["at_least_one_packet_each_flow"] = all(int(row["tx_packets"]) > 0 for row in flow_rows)
 
     validation = {

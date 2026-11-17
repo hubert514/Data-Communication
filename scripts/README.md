@@ -8,6 +8,15 @@ prerequisites, candidate status, exact semantics and pending acceptance.
 fixed-parameter execution, run metadata/checksums, PHY HE_MU parsing,
 R0/R1/R2 comparison, CSV validation, and focused prototype comparison.
 
-TODO / NOT IMPLEMENTED: the full project 4 LL / 4 BE run CLI, batch performance
-experiments, aggregation and plots. `run.sh` and `analyze.py` deliberately exit
-2 with that status; no project performance output is synthesized.
+`mixed_traffic_checkpoint.py` runs and validates one project-specific 4 LL / 4
+BE experiment. `experimental_validation.py` resumes a matched RR/Queue-Age load
+sweep and produces per-run, paired, statistical, scheduler-behavior, and
+verification artifacts. Large raw traces stay under `.local/`.
+
+```bash
+python3 scripts/experimental_validation.py run-matrix --loads 4,8,12 --rng-runs 1,2,3
+python3 scripts/experimental_validation.py aggregate
+```
+
+The legacy `run.sh` and `analyze.py` scaffolds still deliberately exit 2; use
+the Python checkpoint tools above for the implemented scenario.
