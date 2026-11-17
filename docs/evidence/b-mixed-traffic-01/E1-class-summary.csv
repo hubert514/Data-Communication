@@ -1,0 +1,4 @@
+run_id,traffic_class,flow_count,tx_packets,rx_packets,lost_packets,pdr,throughput_mbps,mean_delay_ms,p95_delay_ms,jain_throughput
+E1-RR-seed1,LL,4,1996,1996,0,1.000000000,0.638720000,0.913537,1.542850,1.000000000
+E1-RR-seed1,BE,4,16664,16664,0,1.000000000,31.994880000,1.911540,2.509783,1.000000000
+E1-RR-seed1,ALL,8,18660,18660,0,1.000000000,32.633600000,1.804786,2.484183,0.519955241

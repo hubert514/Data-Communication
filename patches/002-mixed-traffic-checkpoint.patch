@@ -1,0 +1,478 @@
+diff --git a/scratch/wifi-ofdma-mixed-traffic.cc b/scratch/wifi-ofdma-mixed-traffic.cc
+new file mode 100644
+--- /dev/null
++++ b/scratch/wifi-ofdma-mixed-traffic.cc
+@@ -0,0 +1,473 @@
++/*
++ * SPDX-License-Identifier: GPL-2.0-only
++ *
++ * Deterministic Wi-Fi 6 DL OFDMA checkpoint scenario: four low-latency
++ * application flows and four best-effort application flows, all mapped to
++ * MAC TID 0 / AC_BE.  The program emits observation-only CSV traces.
++ */
++
++#include "ns3/ap-wifi-mac.h"
++#include "ns3/applications-module.h"
++#include "ns3/boolean.h"
++#include "ns3/command-line.h"
++#include "ns3/core-module.h"
++#include "ns3/enum.h"
++#include "ns3/he-phy.h"
++#include "ns3/internet-module.h"
++#include "ns3/mobility-module.h"
++#include "ns3/multi-model-spectrum-channel.h"
++#include "ns3/neighbor-cache-helper.h"
++#include "ns3/network-module.h"
++#include "ns3/rr-multi-user-scheduler.h"
++#include "ns3/seq-ts-size-header.h"
++#include "ns3/spectrum-wifi-helper.h"
++#include "ns3/ssid.h"
++#include "ns3/wifi-acknowledgment.h"
++#include "ns3/wifi-module.h"
++#include "ns3/wifi-static-setup-helper.h"
++
++#include <array>
++#include <cmath>
++#include <fstream>
++#include <iomanip>
++#include <map>
++#include <sstream>
++#include <string>
++
++using namespace ns3;
++
++NS_LOG_COMPONENT_DEFINE("WifiOfdmaMixedTraffic");
++
++namespace
++{
++
++constexpr std::size_t N_STATIONS = 8;
++constexpr std::size_t N_LL_STATIONS = 4;
++
++struct FlowInfo
++{
++    uint32_t flowId{0};
++    std::string trafficClass;
++    uint32_t staIndex{0};
++    uint16_t aid{0};
++    Mac48Address mac;
++    Ipv4Address ip;
++    uint16_t port{0};
++    uint32_t packetSize{0};
++    std::string offeredRate;
++};
++
++std::array<FlowInfo, N_STATIONS> g_flows;
++std::map<Mac48Address, std::size_t> g_flowByMac;
++std::map<uint16_t, std::size_t> g_flowByAid;
++std::ofstream g_mapping;
++std::ofstream g_packets;
++std::ofstream g_scheduler;
++std::ofstream g_phy;
++std::string g_runId;
++
++std::string
++AcName(AcIndex ac)
++{
++    switch (ac)
++    {
++    case AcIndex::AC_BE:
++        return "AC_BE";
++    case AcIndex::AC_BK:
++        return "AC_BK";
++    case AcIndex::AC_VI:
++        return "AC_VI";
++    case AcIndex::AC_VO:
++        return "AC_VO";
++    default:
++        return "AC_UNDEF";
++    }
++}
++
++std::string
++MacString(const Mac48Address& address)
++{
++    std::ostringstream stream;
++    stream << address;
++    return stream.str();
++}
++
++const FlowInfo*
++FindFlow(const Mac48Address& address)
++{
++    const auto it = g_flowByMac.find(address);
++    return it == g_flowByMac.end() ? nullptr : &g_flows.at(it->second);
++}
++
++const FlowInfo*
++FindFlow(uint16_t aid)
++{
++    const auto it = g_flowByAid.find(aid);
++    return it == g_flowByAid.end() ? nullptr : &g_flows.at(it->second);
++}
++
++void
++WriteAssociationMapping(Ptr<ApWifiMac> apMac,
++                        Time appStart,
++                        Time appStop,
++                        uint32_t llPacketSize,
++                        uint32_t bePacketSize,
++                        const std::string& llRate,
++                        const std::string& beRate)
++{
++    const auto& staList = apMac->GetStaList(0);
++    NS_ABORT_MSG_IF(staList.size() != N_STATIONS,
++                    "Expected " << N_STATIONS << " statically associated STAs, got "
++                                << staList.size());
++
++    for (const auto& [aid, address] : staList)
++    {
++        const auto flowIt = g_flowByMac.find(address);
++        NS_ABORT_MSG_IF(flowIt == g_flowByMac.end(), "Associated STA is absent from flow map");
++        auto& flow = g_flows.at(flowIt->second);
++        flow.aid = aid;
++        g_flowByAid[aid] = flowIt->second;
++    }
++
++    g_mapping << "run_id,flow_id,traffic_class,sta_index,aid,mac,ip,port,tid,"
++                 "access_category,packet_size_bytes,offered_rate_bps,app_start_ns,app_stop_ns\n";
++    for (const auto& flow : g_flows)
++    {
++        const uint64_t rate = DataRate(flow.offeredRate).GetBitRate();
++        g_mapping << g_runId << ',' << flow.flowId << ',' << flow.trafficClass << ','
++                  << flow.staIndex << ',' << flow.aid << ',' << flow.mac << ',' << flow.ip << ','
++                  << flow.port << ",0,AC_BE," << flow.packetSize << ',' << rate << ','
++                  << appStart.GetNanoSeconds() << ',' << appStop.GetNanoSeconds() << '\n';
++    }
++}
++
++void
++ApplicationTx(std::size_t flowIndex,
++              Ptr<const Packet> packet,
++              const Address& source,
++              const Address& destination)
++{
++    SeqTsSizeHeader header;
++    const auto bytes = packet->PeekHeader(header);
++    NS_ABORT_MSG_IF(bytes == 0, "Successful OnOff Tx did not contain SeqTsSizeHeader");
++    const auto& flow = g_flows.at(flowIndex);
++    g_packets << g_runId << ",tx," << Simulator::Now().GetNanoSeconds() << ',' << flow.flowId
++              << ',' << flow.trafficClass << ',' << flow.staIndex << ',' << flow.aid << ','
++              << flow.mac << ',' << header.GetSeq() << ',' << header.GetSize() << ','
++              << header.GetTs().GetNanoSeconds() << ",\n";
++}
++
++void
++ApplicationRx(std::size_t flowIndex,
++              Ptr<const Packet> packet,
++              const Address& source,
++              const Address& destination,
++              const SeqTsSizeHeader& header)
++{
++    const auto& flow = g_flows.at(flowIndex);
++    const auto delay = Simulator::Now() - header.GetTs();
++    g_packets << g_runId << ",rx," << Simulator::Now().GetNanoSeconds() << ',' << flow.flowId
++              << ',' << flow.trafficClass << ',' << flow.staIndex << ',' << flow.aid << ','
++              << flow.mac << ',' << header.GetSeq() << ',' << header.GetSize() << ','
++              << header.GetTs().GetNanoSeconds() << ',' << delay.GetNanoSeconds() << '\n';
++}
++
++void
++CandidateObservation(uint64_t decisionId,
++                     uint8_t linkId,
++                     uint32_t scanOrder,
++                     uint16_t aid,
++                     Mac48Address address,
++                     int16_t tid,
++                     AcIndex ac,
++                     bool hasMpdu,
++                     uint64_t mpduUid,
++                     int64_t mpduTimestampNs,
++                     int64_t mpduAgeNs,
++                     std::string status)
++{
++    const auto flow = FindFlow(address);
++    g_scheduler << g_runId << ',' << decisionId << ",candidate,"
++                << Simulator::Now().GetNanoSeconds() << ',' << +linkId << ',' << AcName(ac) << ','
++                << scanOrder << ',' << aid << ',' << address << ',';
++    if (tid >= 0)
++    {
++        g_scheduler << tid;
++    }
++    g_scheduler << ',';
++    if (hasMpdu)
++    {
++        g_scheduler << mpduUid << ',' << mpduTimestampNs << ',' << mpduAgeNs;
++    }
++    else
++    {
++        g_scheduler << ",,";
++    }
++    g_scheduler << ',' << status << ",,,,,," << (flow ? flow->trafficClass : "UNKNOWN") << ','
++                << (flow ? std::to_string(flow->staIndex) : "") << '\n';
++}
++
++void
++FinalAllocation(uint64_t decisionId,
++                uint8_t linkId,
++                uint16_t aid,
++                Mac48Address address,
++                uint8_t tid,
++                RuType ruType,
++                std::size_t ruIndex,
++                uint8_t mcs,
++                uint8_t nss)
++{
++    const auto flow = FindFlow(address);
++    g_scheduler << g_runId << ',' << decisionId << ",final,"
++                << Simulator::Now().GetNanoSeconds() << ',' << +linkId << ','
++                << AcName(QosUtilsMapTidToAc(tid)) << ",," << aid << ',' << address << ',' << +tid
++                << ",,,,final_selected,1," << ruType << ',' << ruIndex << ',' << +mcs << ',' << +nss
++                << ',' << (flow ? flow->trafficClass : "UNKNOWN") << ','
++                << (flow ? std::to_string(flow->staIndex) : "") << '\n';
++}
++
++void
++PhyTx(WifiConstPsduMap psduMap, WifiTxVector txVector, double txPowerW)
++{
++    if (!txVector.IsDlMu() || txVector.GetPreambleType() != WIFI_PREAMBLE_HE_MU)
++    {
++        return;
++    }
++
++    static uint64_t phySequence = 0;
++    ++phySequence;
++    for (const auto& [aid, userInfo] : txVector.GetHeMuUserInfoMap())
++    {
++        const auto flow = FindFlow(aid);
++        const auto psduIt = psduMap.find(aid);
++        g_phy << g_runId << ',' << phySequence << ',' << Simulator::Now().GetNanoSeconds() << ','
++              << aid << ',' << (flow ? MacString(flow->mac) : "") << ','
++              << (flow ? flow->trafficClass : "UNKNOWN") << ','
++              << (flow ? std::to_string(flow->staIndex) : "") << ','
++              << WifiRu::GetRuType(userInfo.ru) << ',' << WifiRu::GetIndex(userInfo.ru) << ','
++              << +userInfo.mcs << ',' << +userInfo.nss << ','
++              << (psduIt == psduMap.end() ? 0 : psduIt->second->GetSize()) << '\n';
++    }
++}
++
++void
++OpenOutput(std::ofstream& stream, const std::string& path)
++{
++    stream.open(path, std::ios::out | std::ios::trunc);
++    NS_ABORT_MSG_IF(!stream.is_open(), "Cannot open output CSV " << path);
++}
++
++} // namespace
++
++int
++main(int argc, char* argv[])
++{
++    std::string outputDir{"."};
++    std::string runId{"E1"};
++    std::string beRate{"8Mbps"};
++    std::string llRate{"160kbps"};
++    Time appStart{Seconds(1)};
++    Time measurementDuration{Seconds(5)};
++    Time drainTime{MilliSeconds(200)};
++    uint32_t llPacketSize{200};
++    uint32_t bePacketSize{1200};
++    uint32_t seed{1};
++    uint64_t run{1};
++    bool useQueueAgePriority{false};
++
++    CommandLine cmd(__FILE__);
++    cmd.AddValue("outputDir", "Existing directory for output CSV files", outputDir);
++    cmd.AddValue("runId", "Run label recorded in every output row", runId);
++    cmd.AddValue("beRate", "Per-flow BE application offered rate", beRate);
++    cmd.AddValue("llRate", "Per-flow LL application offered rate", llRate);
++    cmd.AddValue("appStart", "Application measurement start time", appStart);
++    cmd.AddValue("measurementDuration", "Application offered-load duration", measurementDuration);
++    cmd.AddValue("drainTime", "Post-application receive drain time", drainTime);
++    cmd.AddValue("llPacketSize", "LL UDP application packet size", llPacketSize);
++    cmd.AddValue("bePacketSize", "BE UDP application packet size", bePacketSize);
++    cmd.AddValue("seed", "ns-3 RNG seed", seed);
++    cmd.AddValue("run", "ns-3 RNG run", run);
++    cmd.AddValue("useQueueAgePriority",
++                 "Enable class-agnostic queue-head age ordering",
++                 useQueueAgePriority);
++    cmd.Parse(argc, argv);
++
++    NS_ABORT_MSG_IF(llPacketSize <= SeqTsSizeHeader().GetSerializedSize(),
++                    "LL packet must fit SeqTsSizeHeader");
++    NS_ABORT_MSG_IF(bePacketSize <= SeqTsSizeHeader().GetSerializedSize(),
++                    "BE packet must fit SeqTsSizeHeader");
++    NS_ABORT_MSG_IF(measurementDuration <= Seconds(0), "measurementDuration must be positive");
++
++    RngSeedManager::SetSeed(seed);
++    RngSeedManager::SetRun(run);
++    g_runId = runId;
++
++    OpenOutput(g_mapping, outputDir + "/mapping.csv");
++    OpenOutput(g_packets, outputDir + "/packet-events.csv");
++    OpenOutput(g_scheduler, outputDir + "/scheduler.csv");
++    OpenOutput(g_phy, outputDir + "/phy.csv");
++    g_packets << "run_id,event,time_ns,flow_id,traffic_class,sta_index,aid,mac,seq,"
++                 "bytes,source_timestamp_ns,delay_ns\n";
++    g_scheduler << "run_id,decision_id,phase,time_ns,link_id,access_category,scan_order,aid,"
++                   "mac,tid,mpdu_uid,mpdu_timestamp_ns,mpdu_age_ns,eligibility_status,"
++                   "final_selected,ru_type,ru_index,mcs,nss,traffic_class,sta_index\n";
++    g_phy << "run_id,phy_sequence,time_ns,aid,mac,traffic_class,sta_index,ru_type,ru_index,"
++             "mcs,nss,psdu_bytes\n";
++
++    Config::SetDefault("ns3::WifiDefaultAckManager::DlMuAckSequenceType",
++                       EnumValue(WifiAcknowledgment::DL_MU_BAR_BA_SEQUENCE));
++
++    NodeContainer staNodes;
++    staNodes.Create(N_STATIONS);
++    NodeContainer apNode;
++    apNode.Create(1);
++
++    WifiHelper wifi;
++    wifi.SetStandard(WIFI_STANDARD_80211ax);
++    wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager",
++                                 "DataMode",
++                                 StringValue("HeMcs5"),
++                                 "ControlMode",
++                                 StringValue("OfdmRate24Mbps"));
++    wifi.ConfigHeOptions("GuardInterval", TimeValue(NanoSeconds(800)));
++
++    auto spectrumChannel = CreateObject<MultiModelSpectrumChannel>();
++    spectrumChannel->AddPropagationLossModel(CreateObject<LogDistancePropagationLossModel>());
++    SpectrumWifiPhyHelper phy;
++    phy.SetChannel(spectrumChannel);
++    phy.Set("ChannelSettings", StringValue("{0, 20, BAND_5GHZ, 0}"));
++
++    WifiMacHelper mac;
++    const Ssid ssid("ofdma-checkpoint");
++    mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(ssid));
++    auto staDevices = wifi.Install(phy, mac, staNodes);
++
++    mac.SetMultiUserScheduler("ns3::RrMultiUserScheduler",
++                              "EnableUlOfdma",
++                              BooleanValue(false),
++                              "EnableBsrp",
++                              BooleanValue(false),
++                              "NStations",
++                              UintegerValue(4),
++                              "UseCentral26TonesRus",
++                              BooleanValue(false),
++                              "UseQueueAgePriority",
++                              BooleanValue(useQueueAgePriority));
++    mac.SetType("ns3::ApWifiMac",
++                "EnableBeaconJitter",
++                BooleanValue(false),
++                "BeaconGeneration",
++                BooleanValue(false),
++                "Ssid",
++                SsidValue(ssid));
++    auto apDevice = wifi.Install(phy, mac, apNode);
++
++    int64_t stream = 150;
++    stream += WifiHelper::AssignStreams(apDevice, stream);
++    stream += WifiHelper::AssignStreams(staDevices, stream);
++
++    MobilityHelper mobility;
++    auto positions = CreateObject<ListPositionAllocator>();
++    positions->Add(Vector(0.0, 0.0, 0.0));
++    mobility.SetPositionAllocator(positions);
++    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
++    mobility.Install(apNode);
++    for (std::size_t index = 0; index < N_STATIONS; ++index)
++    {
++        MobilityHelper staMobility;
++        auto staPosition = CreateObject<ListPositionAllocator>();
++        const double angle = 2.0 * M_PI * index / N_STATIONS;
++        staPosition->Add(Vector(5.0 * std::cos(angle), 5.0 * std::sin(angle), 0.0));
++        staMobility.SetPositionAllocator(staPosition);
++        staMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
++        staMobility.Install(staNodes.Get(index));
++    }
++
++    auto apWifiDevice = DynamicCast<WifiNetDevice>(apDevice.Get(0));
++    NS_ASSERT(apWifiDevice);
++    WifiStaticSetupHelper::SetStaticAssociation(apWifiDevice, staDevices);
++    WifiStaticSetupHelper::SetStaticBlockAck(apWifiDevice, staDevices, {0});
++
++    InternetStackHelper internet;
++    internet.Install(apNode);
++    internet.Install(staNodes);
++    stream += internet.AssignStreams(apNode, stream);
++    stream += internet.AssignStreams(staNodes, stream);
++
++    Ipv4AddressHelper address;
++    address.SetBase("192.168.1.0", "255.255.255.0");
++    auto staInterfaces = address.Assign(staDevices);
++    address.Assign(apDevice);
++    NeighborCacheHelper neighborCache;
++    neighborCache.PopulateNeighborCache();
++
++    const Time appStop = appStart + measurementDuration;
++    const Time simulationStop = appStop + drainTime;
++    for (std::size_t index = 0; index < N_STATIONS; ++index)
++    {
++        auto wifiDevice = DynamicCast<WifiNetDevice>(staDevices.Get(index));
++        NS_ASSERT(wifiDevice);
++        auto& flow = g_flows.at(index);
++        flow.flowId = index + 1;
++        flow.trafficClass = index < N_LL_STATIONS ? "LL" : "BE";
++        flow.staIndex = index;
++        flow.mac = wifiDevice->GetMac()->GetAddress();
++        flow.ip = staInterfaces.GetAddress(index);
++        flow.port = 9000 + index;
++        flow.packetSize = index < N_LL_STATIONS ? llPacketSize : bePacketSize;
++        flow.offeredRate = index < N_LL_STATIONS ? llRate : beRate;
++        g_flowByMac[flow.mac] = index;
++
++        PacketSinkHelper sink("ns3::UdpSocketFactory",
++                              InetSocketAddress(Ipv4Address::GetAny(), flow.port));
++        sink.SetAttribute("EnableSeqTsSizeHeader", BooleanValue(true));
++        auto sinkApps = sink.Install(staNodes.Get(index));
++        sinkApps.Start(Seconds(0));
++        sinkApps.Stop(simulationStop);
++        auto packetSink = DynamicCast<PacketSink>(sinkApps.Get(0));
++        packetSink->TraceConnectWithoutContext("RxWithSeqTsSize",
++                                               MakeBoundCallback(&ApplicationRx, index));
++
++        OnOffHelper source("ns3::UdpSocketFactory", InetSocketAddress(flow.ip, flow.port));
++        source.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
++        source.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
++        source.SetAttribute("PacketSize", UintegerValue(flow.packetSize));
++        source.SetAttribute("DataRate", DataRateValue(DataRate(flow.offeredRate)));
++        source.SetAttribute("EnableSeqTsSizeHeader", BooleanValue(true));
++        auto sourceApps = source.Install(apNode.Get(0));
++        sourceApps.Start(appStart);
++        sourceApps.Stop(appStop);
++        auto onOff = DynamicCast<OnOffApplication>(sourceApps.Get(0));
++        onOff->TraceConnectWithoutContext("TxWithAddresses",
++                                         MakeBoundCallback(&ApplicationTx, index));
++    }
++
++    auto apMac = DynamicCast<ApWifiMac>(apWifiDevice->GetMac());
++    NS_ASSERT(apMac);
++    auto scheduler = apMac->GetObject<RrMultiUserScheduler>();
++    NS_ABORT_MSG_IF(!scheduler, "RrMultiUserScheduler is not aggregated to AP");
++    scheduler->TraceConnectWithoutContext("CandidateObservation",
++                                          MakeCallback(&CandidateObservation));
++    scheduler->TraceConnectWithoutContext("FinalAllocation", MakeCallback(&FinalAllocation));
++    apWifiDevice->GetPhy(0)->TraceConnectWithoutContext("PhyTxPsduBegin", MakeCallback(&PhyTx));
++
++    Simulator::Schedule(NanoSeconds(1),
++                        &WriteAssociationMapping,
++                        apMac,
++                        appStart,
++                        appStop,
++                        llPacketSize,
++                        bePacketSize,
++                        llRate,
++                        beRate);
++    Simulator::Stop(simulationStop);
++    Simulator::Run();
++    Simulator::Destroy();
++
++    g_mapping.close();
++    g_packets.close();
++    g_scheduler.close();
++    g_phy.close();
++    return 0;
++}

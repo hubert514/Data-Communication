@@ -1,2 +1,3 @@
-# TODO / NOT IMPLEMENTED: no patches required for the official example probe.
-# Add reviewed .patch filenames here, one per line, in application order.
+001-rr-queue-age-observation.patch
+002-mixed-traffic-checkpoint.patch
+003-scheduler-mechanism-observation.patch

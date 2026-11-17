@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Candidate ns-3 setup/build/example probe; no project scheduler is implemented."""
+"""Pinned ns-3 setup, build, and example probe tooling."""
 
 import argparse
 from datetime import datetime, timezone
@@ -145,7 +145,8 @@ def worktree_fingerprint():
 
 
 def patch_inputs():
-    patch_dir = ROOT / "patches"
+    root = ROOT.resolve()
+    patch_dir = root / "patches"
     files = []
     for line in (patch_dir / "series").read_text(encoding="utf-8").splitlines():
         name = line.strip()
@@ -161,7 +162,7 @@ def patch_inputs():
     actual = {path.resolve() for path in patch_dir.rglob("*.patch")}
     if actual != listed:
         raise RuntimeError("Every tracked .patch must be listed exactly once in patches/series.")
-    return files, {path.relative_to(ROOT).as_posix(): digest(path.read_bytes()) for path in files}
+    return files, {path.relative_to(root).as_posix(): digest(path.read_bytes()) for path in files}
 
 
 def verify_checkout(require_state=True):

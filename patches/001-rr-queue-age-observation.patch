@@ -1,0 +1,499 @@
+diff --git a/examples/wireless/wifi-he-network.cc b/examples/wireless/wifi-he-network.cc
+index 9655c5c..26d8667 100644
+--- a/examples/wireless/wifi-he-network.cc
++++ b/examples/wireless/wifi-he-network.cc
+@@ -23,6 +23,7 @@
+ #include "ns3/on-off-helper.h"
+ #include "ns3/packet-sink-helper.h"
+ #include "ns3/packet-sink.h"
++#include "ns3/rr-multi-user-scheduler.h"
+ #include "ns3/spectrum-wifi-helper.h"
+ #include "ns3/ssid.h"
+ #include "ns3/string.h"
+@@ -35,7 +36,9 @@
+ #include "ns3/yans-wifi-helper.h"
+
+ #include <algorithm>
++#include <fstream>
+ #include <functional>
++#include <string>
+
+ // This is a simple example in order to show how to configure an IEEE 802.11ax Wi-Fi network.
+ //
+@@ -59,6 +62,83 @@ using namespace ns3;
+
+ NS_LOG_COMPONENT_DEFINE("he-wifi-network");
+
++namespace
++{
++
++std::ofstream g_rrTrace;
++std::string g_rrTraceRunId;
++
++std::string
++AcName(AcIndex ac)
++{
++    switch (ac)
++    {
++    case AcIndex::AC_BE:
++        return "AC_BE";
++    case AcIndex::AC_BK:
++        return "AC_BK";
++    case AcIndex::AC_VI:
++        return "AC_VI";
++    case AcIndex::AC_VO:
++        return "AC_VO";
++    default:
++        return "AC_UNDEF";
++    }
++}
++
++void
++CandidateObservation(uint64_t decisionId,
++                     uint8_t linkId,
++                     uint32_t scanOrder,
++                     uint16_t aid,
++                     Mac48Address address,
++                     int16_t tid,
++                     AcIndex ac,
++                     bool hasMpdu,
++                     uint64_t mpduUid,
++                     int64_t mpduTimestampNs,
++                     int64_t mpduAgeNs,
++                     std::string status)
++{
++    g_rrTrace << g_rrTraceRunId << ',' << decisionId << ",candidate,"
++              << Simulator::Now().GetNanoSeconds() << ',' << +linkId << ',' << AcName(ac) << ','
++              << scanOrder << ',' << aid << ',' << address << ',';
++    if (tid >= 0)
++    {
++        g_rrTrace << tid;
++    }
++    g_rrTrace << ',';
++    if (hasMpdu)
++    {
++        g_rrTrace << mpduUid << ',' << mpduTimestampNs << ',' << mpduAgeNs;
++    }
++    else
++    {
++        g_rrTrace << ",,";
++    }
++    g_rrTrace << ',' << status << ",,,,," << std::endl;
++}
++
++void
++FinalAllocation(uint64_t decisionId,
++                uint8_t linkId,
++                uint16_t aid,
++                Mac48Address address,
++                uint8_t tid,
++                RuType ruType,
++                std::size_t ruIndex,
++                uint8_t mcs,
++                uint8_t nss)
++{
++    g_rrTrace << g_rrTraceRunId << ',' << decisionId << ",final,"
++              << Simulator::Now().GetNanoSeconds() << ',' << +linkId << ','
++              << AcName(QosUtilsMapTidToAc(tid)) << ",," << aid << ',' << address << ',' << +tid
++              << ",,,,final_selected,1," << ruType << ',' << ruIndex << ',' << +mcs << ',' << +nss
++              << std::endl;
++}
++
++} // namespace
++
+ int
+ main(int argc, char* argv[])
+ {
+@@ -78,6 +158,8 @@ main(int argc, char* argv[])
+     bool enableUlOfdma{false};
+     bool enableBsrp{false};
+     bool useCentral26TonesRus{false};
++    bool useQueueAgePriority{false};
++    bool queueAgeFixture{false};
+     std::string mcsStr;
+     std::vector<uint64_t> mcsValues;
+     int channelWidth{-1};  // in MHz, -1 indicates an unset value
+@@ -88,6 +170,8 @@ main(int argc, char* argv[])
+     double minExpectedThroughput{0.0};
+     double maxExpectedThroughput{0.0};
+     Time accessReqInterval{0};
++    std::string rrTraceCsv;
++    std::string rrTraceRunId{"rr"};
+
+     CommandLine cmd(__FILE__);
+     cmd.AddValue("staticSetup",
+@@ -121,6 +205,12 @@ main(int argc, char* argv[])
+                  "Enable BSRP (useful if DL and UL OFDMA are enabled and TCP is used)",
+                  enableBsrp);
+     cmd.AddValue("useCentral26TonesRus", "Allow to use central 26-tones RUs", useCentral26TonesRus);
++    cmd.AddValue("useQueueAgePriority",
++                 "Use the class-agnostic queue-head MPDU age ranking prototype",
++                 useQueueAgePriority);
++    cmd.AddValue("queueAgeFixture",
++                 "Delay the first half of UDP flows by 2 ms for queue-age scheduler testing",
++                 queueAgeFixture);
+     cmd.AddValue(
+         "muSchedAccessReqInterval",
+         "Duration of the interval between two requests for channel access made by the MU scheduler",
+@@ -149,8 +239,23 @@ main(int argc, char* argv[])
+     cmd.AddValue("maxExpectedThroughput",
+                  "if set, simulation fails if the highest throughput is above this value",
+                  maxExpectedThroughput);
++    cmd.AddValue("rrTraceCsv",
++                 "Write observation-only RR candidate and final-allocation trace to this CSV",
++                 rrTraceCsv);
++    cmd.AddValue("rrTraceRunId", "Run identifier written to the RR trace CSV", rrTraceRunId);
+     cmd.Parse(argc, argv);
+
++    if (!rrTraceCsv.empty())
++    {
++        g_rrTrace.open(rrTraceCsv, std::ios::out | std::ios::trunc);
++        NS_ABORT_MSG_IF(!g_rrTrace.is_open(), "Cannot open RR trace CSV " << rrTraceCsv);
++        g_rrTraceRunId = rrTraceRunId;
++        g_rrTrace << "run_id,decision_id,phase,time_ns,link_id,access_category,scan_order,aid,mac,"
++                     "tid,mpdu_uid,mpdu_timestamp_ns,mpdu_age_ns,eligibility_status,final_selected,"
++                     "ru_type,ru_index,mcs,nss"
++                  << std::endl;
++    }
++
+     if (useRts)
+     {
+         Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue("0"));
+@@ -344,7 +449,9 @@ main(int argc, char* argv[])
+                                                   "NStations",
+                                                   UintegerValue(maxMuStas),
+                                                   "UseCentral26TonesRus",
+-                                                  BooleanValue(useCentral26TonesRus));
++                                                  BooleanValue(useCentral26TonesRus),
++                                                  "UseQueueAgePriority",
++                                                  BooleanValue(useQueueAgePriority));
+                     }
+                     mac.SetType("ns3::ApWifiMac",
+                                 "EnableBeaconJitter",
+@@ -378,6 +485,18 @@ main(int argc, char* argv[])
+                     apDevice = wifi.Install(phy, mac, wifiApNode);
+                 }
+
++                if (!rrTraceCsv.empty() && dlAckSeqType != "NO-OFDMA")
++                {
++                    auto apDev = DynamicCast<WifiNetDevice>(apDevice.Get(0));
++                    NS_ASSERT(apDev);
++                    auto rrScheduler = apDev->GetMac()->GetObject<RrMultiUserScheduler>();
++                    NS_ABORT_MSG_IF(!rrScheduler, "RrMultiUserScheduler is not aggregated to AP");
++                    rrScheduler->TraceConnectWithoutContext("CandidateObservation",
++                                                            MakeCallback(&CandidateObservation));
++                    rrScheduler->TraceConnectWithoutContext("FinalAllocation",
++                                                            MakeCallback(&FinalAllocation));
++                }
++
+                 int64_t streamNumber = 150;
+                 streamNumber += WifiHelper::AssignStreams(apDevice, streamNumber);
+                 streamNumber += WifiHelper::AssignStreams(staDevices, streamNumber);
+@@ -463,7 +582,10 @@ main(int argc, char* argv[])
+                         ApplicationContainer clientApp = client.Install(clientNodes.Get(i));
+                         streamNumber += client.AssignStreams(clientNodes.Get(i), streamNumber);
+
+-                        clientApp.Start(clientAppStartTime);
++                        const auto flowStart =
++                            clientAppStartTime +
++                            (queueAgeFixture && i < nStations / 2 ? MilliSeconds(2) : Seconds(0));
++                        clientApp.Start(flowStart);
+                         clientApp.Stop(simulationTime + clientAppStartTime);
+                     }
+                 }
+diff --git a/src/wifi/model/he/rr-multi-user-scheduler.cc b/src/wifi/model/he/rr-multi-user-scheduler.cc
+index f005b4c..13c63bf 100644
+--- a/src/wifi/model/he/rr-multi-user-scheduler.cc
++++ b/src/wifi/model/he/rr-multi-user-scheduler.cc
+@@ -13,6 +13,7 @@
+
+ #include "ns3/eht-frame-exchange-manager.h"
+ #include "ns3/log.h"
++#include "ns3/simulator.h"
+ #include "ns3/wifi-acknowledgment.h"
+ #include "ns3/wifi-mac-queue.h"
+ #include "ns3/wifi-protection.h"
+@@ -74,6 +75,14 @@ RrMultiUserScheduler::GetTypeId()
+                           BooleanValue(false),
+                           MakeBooleanAccessor(&RrMultiUserScheduler::m_useCentral26TonesRus),
+                           MakeBooleanChecker())
++            .AddAttribute(
++                "UseQueueAgePriority",
++                "If enabled, use a class-agnostic prototype that ranks stations by the oldest "
++                "queue-head MPDU timestamp before applying the existing RR eligibility and RU "
++                "allocation path.",
++                BooleanValue(false),
++                MakeBooleanAccessor(&RrMultiUserScheduler::m_useQueueAgePriority),
++                MakeBooleanChecker())
+             .AddAttribute(
+                 "MaxCredits",
+                 "Maximum amount of credits a station can have. When transmitting a DL MU PPDU, "
+@@ -83,7 +92,18 @@ RrMultiUserScheduler::GetTypeId()
+                 "duration (in microseconds) times the allocated bandwidth share",
+                 TimeValue(Seconds(1)),
+                 MakeTimeAccessor(&RrMultiUserScheduler::m_maxCredits),
+-                MakeTimeChecker());
++                MakeTimeChecker())
++            .AddTraceSource(
++                "CandidateObservation",
++                "Observation of a station/TID examined by the existing RR DL candidate loop. "
++                "The MPDU age is candidate_head_mpdu_age, not end-to-end latency.",
++                MakeTraceSourceAccessor(&RrMultiUserScheduler::m_candidateObservation),
++                "ns3::RrMultiUserScheduler::CandidateObservationCallback")
++            .AddTraceSource(
++                "FinalAllocation",
++                "Final STA and RU allocation after RR RU finalization.",
++                MakeTraceSourceAccessor(&RrMultiUserScheduler::m_finalAllocation),
++                "ns3::RrMultiUserScheduler::FinalAllocationCallback");
+     return tid;
+ }
+
+@@ -748,6 +768,9 @@ RrMultiUserScheduler::TrySendingDlMuPpdu()
+ {
+     NS_LOG_FUNCTION(this);
+
++    m_currentObservationDecision = ++m_observationDecisionCounter;
++    m_observationScanOrder = 0;
++
+     AcIndex primaryAc = m_edca->GetAccessCategory();
+
+     if (m_staListDl[primaryAc].empty())
+@@ -786,6 +809,11 @@ RrMultiUserScheduler::TrySendingDlMuPpdu()
+         tids.push_back(currTid);
+     }
+
++    if (m_useQueueAgePriority)
++    {
++        ApplyQueueAgePriority(primaryAc, tids);
++    }
++
+     Ptr<HeConfiguration> heConfiguration = m_apMac->GetHeConfiguration();
+     NS_ASSERT(heConfiguration);
+
+@@ -817,6 +845,7 @@ RrMultiUserScheduler::TrySendingDlMuPpdu()
+         if (m_txParams.m_txVector.GetPreambleType() == WIFI_PREAMBLE_EHT_MU &&
+             !m_apMac->GetEhtSupported(staIt->address))
+         {
++            TraceCandidateObservation(*staIt, -1, primaryAc, nullptr, "non_eht_rejected");
+             NS_LOG_DEBUG("Skipping non-EHT STA because this DL MU PPDU is sent to EHT STAs only");
+             staIt++;
+             continue;
+@@ -883,12 +912,14 @@ RrMultiUserScheduler::TrySendingDlMuPpdu()
+
+                     if (!GetHeFem(m_linkId)->TryAddMpdu(mpdu, m_txParams, m_availableTime))
+                     {
++                        TraceCandidateObservation(*staIt, tid, ac, mpdu, "time_rejected");
+                         NS_LOG_DEBUG("Adding the peeked frame violates the time constraints");
+                         m_txParams.m_txVector = txVectorCopy;
+                     }
+                     else
+                     {
+                         // the frame meets the constraints
++                        TraceCandidateObservation(*staIt, tid, ac, mpdu, "candidate_accepted");
+                         NS_LOG_DEBUG("Adding candidate STA (MAC=" << staIt->address
+                                                                   << ", AID=" << staIt->aid
+                                                                   << ") TID=" << +tid);
+@@ -898,11 +929,13 @@ RrMultiUserScheduler::TrySendingDlMuPpdu()
+                 }
+                 else
+                 {
++                    TraceCandidateObservation(*staIt, tid, ac, nullptr, "empty_queue");
+                     NS_LOG_DEBUG("No frames to send to " << staIt->address << " with TID=" << +tid);
+                 }
+             }
+             else
+             {
++                TraceCandidateObservation(*staIt, tid, ac, nullptr, "no_ba");
+                 NS_LOG_DEBUG("No BA agreement established with " << staIt->address
+                                                                  << " for TID=" << +tid);
+             }
+@@ -926,6 +959,74 @@ RrMultiUserScheduler::TrySendingDlMuPpdu()
+     return TxFormat::DL_MU_TX;
+ }
+
++void
++RrMultiUserScheduler::ApplyQueueAgePriority(AcIndex primaryAc, const std::vector<uint8_t>& tids)
++{
++    std::map<uint16_t, Time> oldestTimestamp;
++
++    for (const auto& station : m_staListDl[primaryAc])
++    {
++        for (uint8_t tid : tids)
++        {
++            if (!m_apMac->GetBaAgreementEstablishedAsOriginator(station.address, tid))
++            {
++                continue;
++            }
++            const auto ac = QosUtilsMapTidToAc(tid);
++            auto mpdu = m_apMac->GetQosTxop(ac)->PeekNextMpdu(m_linkId, tid, station.address);
++            if (mpdu)
++            {
++                TraceCandidateObservation(station, tid, ac, mpdu, "age_rank_observed");
++                if (!oldestTimestamp.contains(station.aid) ||
++                    mpdu->GetTimestamp() < oldestTimestamp.at(station.aid))
++                {
++                    oldestTimestamp[station.aid] = mpdu->GetTimestamp();
++                }
++            }
++        }
++    }
++
++    m_staListDl[primaryAc].sort([&oldestTimestamp](const MasterInfo& lhs, const MasterInfo& rhs) {
++        const bool lhsHasMpdu = oldestTimestamp.contains(lhs.aid);
++        const bool rhsHasMpdu = oldestTimestamp.contains(rhs.aid);
++        if (lhsHasMpdu != rhsHasMpdu)
++        {
++            return lhsHasMpdu;
++        }
++        if (!lhsHasMpdu || oldestTimestamp.at(lhs.aid) == oldestTimestamp.at(rhs.aid))
++        {
++            return false; // stable list::sort preserves the existing RR order for ties
++        }
++        return oldestTimestamp.at(lhs.aid) < oldestTimestamp.at(rhs.aid);
++    });
++}
++
++void
++RrMultiUserScheduler::TraceCandidateObservation(const MasterInfo& info,
++                                                int16_t tid,
++                                                AcIndex ac,
++                                                Ptr<const WifiMpdu> mpdu,
++                                                const std::string& status)
++{
++    const bool hasMpdu = (mpdu != nullptr);
++    const uint64_t mpduUid = hasMpdu ? mpdu->GetPacket()->GetUid() : 0;
++    const int64_t timestampNs = hasMpdu ? mpdu->GetTimestamp().GetNanoSeconds() : 0;
++    const int64_t ageNs = hasMpdu ? (Simulator::Now() - mpdu->GetTimestamp()).GetNanoSeconds() : 0;
++
++    m_candidateObservation(m_currentObservationDecision,
++                           m_linkId,
++                           m_observationScanOrder++,
++                           info.aid,
++                           info.address,
++                           tid,
++                           ac,
++                           hasMpdu,
++                           mpduUid,
++                           timestampNs,
++                           ageNs,
++                           status);
++}
++
+ void
+ RrMultiUserScheduler::FinalizeTxVector(WifiTxVector& txVector)
+ {
+@@ -1043,6 +1144,22 @@ RrMultiUserScheduler::ComputeDlMuInfo()
+     std::swap(dlMuInfo.txParams.m_txVector, m_txParams.m_txVector);
+     FinalizeTxVector(dlMuInfo.txParams.m_txVector);
+
++    for (const auto& candidate : m_candidates)
++    {
++        const auto mapIt =
++            dlMuInfo.txParams.m_txVector.GetHeMuUserInfoMap().find(candidate.first->aid);
++        NS_ASSERT(mapIt != dlMuInfo.txParams.m_txVector.GetHeMuUserInfoMap().end());
++        m_finalAllocation(m_currentObservationDecision,
++                          m_linkId,
++                          candidate.first->aid,
++                          candidate.first->address,
++                          candidate.second->GetHeader().GetQosTid(),
++                          WifiRu::GetRuType(mapIt->second.ru),
++                          WifiRu::GetIndex(mapIt->second.ru),
++                          mapIt->second.mcs,
++                          mapIt->second.nss);
++    }
++
+     m_txParams.Clear();
+     Ptr<WifiMpdu> mpdu;
+
+diff --git a/src/wifi/model/he/rr-multi-user-scheduler.h b/src/wifi/model/he/rr-multi-user-scheduler.h
+index d52162f..9a1deb6 100644
+--- a/src/wifi/model/he/rr-multi-user-scheduler.h
++++ b/src/wifi/model/he/rr-multi-user-scheduler.h
+@@ -11,10 +11,14 @@
+
+ #include "multi-user-scheduler.h"
+
++#include "ns3/traced-callback.h"
+ #include "ns3/wifi-export.h"
+
++#include <cstdint>
+ #include <functional>
+ #include <list>
++#include <string>
++#include <vector>
+
+ namespace ns3
+ {
+@@ -172,6 +176,32 @@ class WIFI_EXPORT RrMultiUserScheduler : public MultiUserScheduler
+                        Time txDuration,
+                        const WifiTxVector& txVector);
+
++    /**
++     * Emit an observation for a station/TID examined by the existing RR candidate loop.
++     * This method only reads scheduler and MPDU state.
++     *
++     * @param info station information
++     * @param tid examined TID, or -1 if no TID was examined
++     * @param ac examined access category
++     * @param mpdu examined queue-head MPDU, if any
++     * @param status eligibility result
++     */
++    void TraceCandidateObservation(const MasterInfo& info,
++                                   int16_t tid,
++                                   AcIndex ac,
++                                   Ptr<const WifiMpdu> mpdu,
++                                   const std::string& status);
++
++    /**
++     * Reorder the current per-AC station list by oldest queue-head MPDU timestamp.
++     * This class-agnostic prototype is active only when UseQueueAgePriority is true.
++     * Stations and TIDs are still checked by the unmodified RR eligibility path.
++     *
++     * @param primaryAc access category that gained channel access
++     * @param tids TIDs considered by the existing RR candidate loop
++     */
++    void ApplyQueueAgePriority(AcIndex primaryAc, const std::vector<uint8_t>& tids);
++
+     /**
+      * Information stored for candidate stations
+      */
+@@ -183,12 +213,39 @@ class WIFI_EXPORT RrMultiUserScheduler : public MultiUserScheduler
+     bool m_enableUlOfdma;        //!< enable the scheduler to also return UL_OFDMA
+     bool m_enableBsrp;           //!< send a BSRP before an UL MU transmission
+     bool m_useCentral26TonesRus; //!< whether to allocate central 26-tone RUs
++    bool m_useQueueAgePriority;  //!< enable class-agnostic queue-head age ranking prototype
+     uint32_t m_ulPsduSize;       //!< the size in byte of the solicited PSDU
+     std::map<AcIndex, std::list<MasterInfo>>
+         m_staListDl;                       //!< Per-AC list of stations (next to serve for DL first)
+     std::list<MasterInfo> m_staListUl;     //!< List of stations to serve for UL
+     std::list<CandidateInfo> m_candidates; //!< Candidate stations for MU TX
+     Time m_maxCredits;                     //!< Max amount of credits a station can have
++    uint64_t m_observationDecisionCounter{0}; //!< observation-only DL decision counter
++    uint64_t m_currentObservationDecision{0}; //!< current observation decision ID
++    uint32_t m_observationScanOrder{0};       //!< order of emitted candidate observations
++    TracedCallback<uint64_t,
++                   uint8_t,
++                   uint32_t,
++                   uint16_t,
++                   Mac48Address,
++                   int16_t,
++                   AcIndex,
++                   bool,
++                   uint64_t,
++                   int64_t,
++                   int64_t,
++                   std::string>
++        m_candidateObservation; //!< existing RR candidate-loop observations
++    TracedCallback<uint64_t,
++                   uint8_t,
++                   uint16_t,
++                   Mac48Address,
++                   uint8_t,
++                   RuType,
++                   std::size_t,
++                   uint8_t,
++                   uint8_t>
++        m_finalAllocation; //!< final STA/RU allocation after FinalizeTxVector
+     CtrlTriggerHeader m_trigger;           //!< Trigger Frame to send
+     WifiMacHeader m_triggerMacHdr;         //!< MAC header for Trigger Frame
+     Time m_triggerTxDuration{0};           //!< Trigger Frame TX duration

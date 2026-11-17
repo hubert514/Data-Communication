@@ -1,0 +1,17 @@
+scheduler,artifact,baseline_rows,instrumented_rows,common_fields,exact_common_rows_equal
+rr,mapping.csv,8,8,flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns,true
+rr,packet-events.csv,37320,37320,event|time_ns|flow_id|traffic_class|sta_index|aid|mac|seq|bytes|source_timestamp_ns|delay_ns,true
+rr,scheduler.csv,103832,103832,decision_id|phase|time_ns|link_id|access_category|scan_order|aid|mac|tid|mpdu_uid|mpdu_timestamp_ns|mpdu_age_ns|eligibility_status|final_selected|ru_type|ru_index|mcs|nss|traffic_class|sta_index,true
+rr,phy.csv,14476,14476,phy_sequence|time_ns|aid|mac|traffic_class|sta_index|ru_type|ru_index|mcs|nss|psdu_bytes,true
+rr,packet-summary.csv,18660,18660,flow_id|traffic_class|sta_index|aid|mac|seq|bytes|tx_time_ns|rx_time_ns|delay_ms|status,true
+rr,flow-summary.csv,8,8,flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns|measurement_duration_s|tx_packets|rx_packets|tx_bytes|rx_bytes|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms,true
+rr,class-summary.csv,3,3,traffic_class|flow_count|tx_packets|rx_packets|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms|jain_throughput,true
+rr,queue-age-summary.csv,3,3,traffic_class|sample_definition|sample_count|mean_age_ms|p50_age_ms|p95_age_ms|max_age_ms,true
+queue-age,mapping.csv,8,8,flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns,true
+queue-age,packet-events.csv,37320,37320,event|time_ns|flow_id|traffic_class|sta_index|aid|mac|seq|bytes|source_timestamp_ns|delay_ns,true
+queue-age,scheduler.csv,47084,47084,decision_id|phase|time_ns|link_id|access_category|scan_order|aid|mac|tid|mpdu_uid|mpdu_timestamp_ns|mpdu_age_ns|eligibility_status|final_selected|ru_type|ru_index|mcs|nss|traffic_class|sta_index,true
+queue-age,phy.csv,14476,14476,phy_sequence|time_ns|aid|mac|traffic_class|sta_index|ru_type|ru_index|mcs|nss|psdu_bytes,true
+queue-age,packet-summary.csv,18660,18660,flow_id|traffic_class|sta_index|aid|mac|seq|bytes|tx_time_ns|rx_time_ns|delay_ms|status,true
+queue-age,flow-summary.csv,8,8,flow_id|traffic_class|sta_index|aid|mac|ip|port|tid|access_category|packet_size_bytes|offered_rate_bps|app_start_ns|app_stop_ns|measurement_duration_s|tx_packets|rx_packets|tx_bytes|rx_bytes|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms,true
+queue-age,class-summary.csv,3,3,traffic_class|flow_count|tx_packets|rx_packets|lost_packets|pdr|throughput_mbps|mean_delay_ms|p95_delay_ms|jain_throughput,true
+queue-age,queue-age-summary.csv,3,3,traffic_class|sample_definition|sample_count|mean_age_ms|p50_age_ms|p95_age_ms|max_age_ms,true

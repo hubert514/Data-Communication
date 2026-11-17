@@ -1,7 +1,12 @@
 # Output contract and storage policy
 
-TODO / NOT IMPLEMENTED: no empirical CSVs or project result pipeline exists.
-Do not create dummy measurements. Local setup/build/example evidence lives in
+The official-example scheduler checkpoint now has real local candidate-age and
+RU-allocation CSVs under `.local/scheduler-checkpoint/`; its provenance and
+verified summary are indexed by `docs/evidence/b-scheduler-01/MANIFEST.md`.
+The project 4 LL / 4 BE empirical pipeline is implemented by
+`scripts/mixed_traffic_checkpoint.py`. Its first seed-1 E1/E2 summaries and raw
+checksums are indexed by `docs/evidence/b-mixed-traffic-01/MANIFEST.md`.
+Do not create dummy measurements. Local setup/build evidence lives in
 `.local/evidence/`; preserve/share real evidence and add its location to issues.
 Results are ignored by default. Explicitly select small real outputs only after
 provenance review; use durable external storage for large raw data/PCAPs and
@@ -27,5 +32,6 @@ layers, units, windows, drain, loss handling and deadline denominator before use
 
 `run_metadata.json`: exact upstream/project SHA, toolchain/OS, full config,
 scheduler, seed/run, exact invocation, timestamps, outcome, file checksums.
-Bootstrap tooling emits an operation-specific metadata schema, with no claim
-that the project experiment schema or measured outputs are implemented.
+Bootstrap tooling emits an operation-specific metadata schema. Project runs
+emit `mixed-traffic-run-v1` metadata plus packet-, flow-, class-, queue-age-,
+scheduler-, and PHY-layer outputs.

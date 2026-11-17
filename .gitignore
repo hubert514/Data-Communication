@@ -26,6 +26,8 @@ results/*
 !results/README.md
 figures/*
 !figures/README.md
+!figures/throughput-by-class.svg
+!figures/p95-delay-by-class.svg
 # Local bootstrap working notes
 task_plan.md
 findings.md
